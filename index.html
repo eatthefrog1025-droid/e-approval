@@ -5,904 +5,1001 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>전자결재 시스템</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Malgun Gothic','맑은 고딕',sans-serif; background:#f0f2f5; color:#333; font-size:14px; }
-a { text-decoration:none; color:inherit; cursor:pointer; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f0f2f5;color:#333;font-size:14px;}
+a{text-decoration:none;color:inherit;cursor:pointer;}
+input,select,textarea,button{font-family:inherit;}
+.app{display:flex;height:100vh;}
 
-/* Layout */
-.app { display:flex; height:100vh; }
-.icon-sidebar { width:50px; background:#2c3e50; display:flex; flex-direction:column; align-items:center; padding-top:12px; gap:4px; flex-shrink:0; }
-.icon-sidebar .icon-btn { width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:#8899aa; border-radius:8px; cursor:pointer; font-size:18px; transition:all .2s; }
-.icon-sidebar .icon-btn:hover, .icon-sidebar .icon-btn.active { background:#3d5166; color:#fff; }
-.icon-sidebar .icon-btn .badge { position:absolute; top:-4px; right:-4px; background:#e74c3c; color:#fff; font-size:10px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; }
+/* Icon sidebar */
+.icon-sidebar{width:50px;background:#2c3e50;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:4px;flex-shrink:0;}
+.icon-sidebar .ib{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#8899aa;border-radius:8px;cursor:pointer;font-size:18px;transition:.2s;position:relative;}
+.icon-sidebar .ib:hover,.icon-sidebar .ib.active{background:#3d5166;color:#fff;}
+.icon-sidebar .ib .badge{position:absolute;top:2px;right:2px;background:#e74c3c;color:#fff;font-size:9px;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
 
-.left-panel { width:240px; background:#fff; border-right:1px solid #ddd; overflow-y:auto; flex-shrink:0; }
-.left-panel h3 { padding:16px 20px 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
-.left-panel h3 svg { width:20px; height:20px; }
-.new-doc-btn { display:block; margin:12px 16px; padding:12px; background:#2196F3; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; text-align:center; transition:background .2s; }
-.new-doc-btn:hover { background:#1976D2; }
+/* Left panel */
+.left-panel{width:240px;background:#fff;border-right:1px solid #ddd;overflow-y:auto;flex-shrink:0;}
+.left-panel h3{padding:16px 20px 8px;font-size:15px;}
+.new-doc-btn{display:block;margin:12px 16px;padding:12px;background:#2196F3;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:.2s;}
+.new-doc-btn:hover{background:#1976D2;}
+.nav-section{margin-top:8px;}
+.nav-section-title{padding:8px 20px 4px;font-size:12px;color:#888;font-weight:600;}
+.nav-item{padding:8px 20px 8px 28px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:.15s;}
+.nav-item:hover{background:#f5f5f5;}
+.nav-item.active{background:#e3f2fd;color:#1976D2;font-weight:600;}
+.nav-item .cnt{margin-left:auto;background:#e0e0e0;color:#666;font-size:11px;padding:1px 7px;border-radius:10px;}
+.nav-item .cnt.alert{background:#e74c3c;color:#fff;}
 
-.nav-section { margin-top:8px; }
-.nav-section-title { padding:8px 20px 4px; font-size:12px; color:#888; font-weight:600; }
-.nav-item { padding:8px 20px 8px 28px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:13px; transition:background .15s; }
-.nav-item:hover { background:#f5f5f5; }
-.nav-item.active { background:#e3f2fd; color:#1976D2; font-weight:600; }
-.nav-item .count { margin-left:auto; background:#e0e0e0; color:#666; font-size:11px; padding:1px 7px; border-radius:10px; }
-.nav-item .count.alert { background:#e74c3c; color:#fff; }
+/* Main */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.top-bar{height:56px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;padding:0 24px;gap:16px;}
+.top-bar h2{font-size:16px;}
+.top-bar .bc{color:#888;font-size:13px;}
+.top-bar .sp{flex:1;}
+.user-info{display:flex;align-items:center;gap:8px;font-size:13px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;}
+.content{flex:1;overflow-y:auto;padding:24px;}
 
-.main-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.top-bar { height:56px; background:#fff; border-bottom:1px solid #ddd; display:flex; align-items:center; padding:0 24px; gap:16px; }
-.top-bar h2 { font-size:16px; }
-.top-bar .breadcrumb { color:#888; font-size:13px; }
-.top-bar .spacer { flex:1; }
-.top-bar .search-box { padding:6px 12px; border:1px solid #ddd; border-radius:20px; font-size:13px; width:200px; }
-.top-bar .user-info { display:flex; align-items:center; gap:8px; font-size:13px; }
-.top-bar .user-avatar { width:32px; height:32px; border-radius:50%; background:#2196F3; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; }
+/* Tables */
+.doc-table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.doc-table th{background:#f8f9fa;padding:12px 16px;text-align:left;font-size:13px;color:#666;border-bottom:2px solid #e0e0e0;white-space:nowrap;}
+.doc-table td{padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;}
+.doc-table tr:hover td{background:#f8fbff;}
+.doc-title-link{color:#1976D2;cursor:pointer;font-weight:500;}
+.doc-title-link:hover{text-decoration:underline;}
 
-.content { flex:1; overflow-y:auto; padding:24px; }
+.status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+.status-badge.draft{background:#fff3e0;color:#e65100;}
+.status-badge.pending{background:#e3f2fd;color:#1565c0;}
+.status-badge.approved{background:#e8f5e9;color:#2e7d32;}
+.status-badge.rejected{background:#ffebee;color:#c62828;}
 
-/* Document List */
-.doc-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.doc-list-header h3 { font-size:18px; }
-.doc-table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
-.doc-table th { background:#f8f9fa; padding:12px 16px; text-align:left; font-size:13px; color:#666; border-bottom:2px solid #e0e0e0; white-space:nowrap; }
-.doc-table td { padding:12px 16px; border-bottom:1px solid #f0f0f0; font-size:13px; }
-.doc-table tr:hover td { background:#f8fbff; }
-.doc-table .doc-title-link { color:#1976D2; cursor:pointer; font-weight:500; }
-.doc-table .doc-title-link:hover { text-decoration:underline; }
+/* Doc view */
+.doc-container{max-width:1200px;margin:0 auto;display:flex;gap:20px;}
+.doc-main{flex:1;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;}
+.doc-sidebar{width:280px;flex-shrink:0;}
+.doc-toolbar{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid #e0e0e0;background:#f8f9fa;flex-wrap:wrap;}
+.btn{padding:7px 16px;border:1px solid #ddd;background:#fff;border-radius:6px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:.15s;}
+.btn:hover{background:#f0f0f0;}
+.btn.primary{background:#2196F3;color:#fff;border-color:#2196F3;}
+.btn.primary:hover{background:#1976D2;}
+.btn.danger{color:#c62828;border-color:#ef9a9a;}
+.btn.danger:hover{background:#ffebee;}
+.btn.success{background:#4caf50;color:#fff;border-color:#4caf50;}
+.btn.success:hover{background:#388e3c;}
 
-.status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
-.status-badge.draft { background:#fff3e0; color:#e65100; }
-.status-badge.pending { background:#e3f2fd; color:#1565c0; }
-.status-badge.approved { background:#e8f5e9; color:#2e7d32; }
-.status-badge.rejected { background:#ffebee; color:#c62828; }
+.doc-paper{padding:40px 48px;min-height:600px;}
+.doc-paper h1{text-align:center;font-size:28px;letter-spacing:12px;margin-bottom:32px;}
 
-/* Document View / Form */
-.doc-container { max-width:1200px; margin:0 auto; display:flex; gap:20px; }
-.doc-main { flex:1; background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden; }
-.doc-sidebar { width:280px; flex-shrink:0; }
+.doc-meta-table{border-collapse:collapse;margin-bottom:24px;}
+.doc-meta-table th,.doc-meta-table td{border:1px solid #999;padding:8px 16px;font-size:13px;}
+.doc-meta-table th{background:#f5f5f5;font-weight:600;width:80px;text-align:center;}
 
-.doc-toolbar { display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid #e0e0e0; background:#f8f9fa; flex-wrap:wrap; }
-.doc-toolbar .btn { padding:7px 16px; border:1px solid #ddd; background:#fff; border-radius:6px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all .15s; }
-.doc-toolbar .btn:hover { background:#f0f0f0; }
-.doc-toolbar .btn.primary { background:#2196F3; color:#fff; border-color:#2196F3; }
-.doc-toolbar .btn.primary:hover { background:#1976D2; }
-.doc-toolbar .btn.danger { color:#c62828; border-color:#ef9a9a; }
-.doc-toolbar .btn.danger:hover { background:#ffebee; }
-.doc-toolbar .btn.success { background:#4caf50; color:#fff; border-color:#4caf50; }
-.doc-toolbar .btn.success:hover { background:#388e3c; }
+.approval-table{border-collapse:collapse;}
+.approval-table th,.approval-table td{border:1px solid #999;padding:4px 8px;text-align:center;font-size:12px;}
+.approval-table th{background:#f5f5f5;font-weight:600;}
+.stamp-cell{width:80px;height:70px;vertical-align:middle;}
+.stamp{display:inline-flex;flex-direction:column;align-items:center;}
+.stamp-circle{width:48px;height:48px;border:2px solid #c0392b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#c0392b;font-size:13px;font-weight:700;}
+.stamp-circle.rejected{border-color:#666;color:#666;}
+.stamp-name{font-size:11px;color:#333;margin-top:2px;}
+.stamp-date{font-size:10px;color:#888;}
+.stamp-pending{color:#999;font-size:12px;}
 
-.doc-paper { padding:40px 48px; min-height:600px; }
-.doc-paper h1 { text-align:center; font-size:28px; letter-spacing:12px; margin-bottom:32px; }
+.doc-detail-table{width:100%;border-collapse:collapse;margin-bottom:20px;clear:both;}
+.doc-detail-table th,.doc-detail-table td{border:1px solid #999;padding:8px 16px;font-size:13px;}
+.doc-detail-table th{background:#f5f5f5;font-weight:600;width:100px;text-align:center;}
+.doc-body{margin-top:16px;padding:20px 0;min-height:200px;white-space:pre-wrap;line-height:1.8;font-size:14px;}
+.doc-body-label{text-align:center;color:#888;margin-top:16px;font-size:13px;}
 
-.doc-meta-table { width:auto; border-collapse:collapse; margin-bottom:24px; }
-.doc-meta-table th, .doc-meta-table td { border:1px solid #999; padding:8px 16px; font-size:13px; }
-.doc-meta-table th { background:#f5f5f5; font-weight:600; width:80px; text-align:center; }
+/* Sidebar cards */
+.sidebar-card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px;overflow:hidden;}
+.sidebar-card-header{padding:12px 16px;border-bottom:1px solid #e0e0e0;}
+.sidebar-card-header h4{font-size:14px;}
+.approval-line-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f0f0;}
+.approval-line-item:last-child{border-bottom:none;}
+.approval-line-item.current{background:#fff8e1;}
+.approval-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;flex-shrink:0;}
+.approval-line-info{flex:1;}
+.approval-line-info .name{font-size:13px;font-weight:600;}
+.approval-line-info .dept{font-size:11px;color:#888;}
+.approval-line-info .time{font-size:11px;color:#aaa;}
+.als{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;}
+.als.done{background:#e8f5e9;color:#2e7d32;}
+.als.waiting{background:#fff3e0;color:#e65100;}
+.als.rejected{background:#ffebee;color:#c62828;}
 
-/* Approval Stamp Table */
-.approval-table-wrap { float:right; margin-bottom:24px; }
-.approval-table { border-collapse:collapse; }
-.approval-table th, .approval-table td { border:1px solid #999; padding:4px 8px; text-align:center; font-size:12px; }
-.approval-table th { background:#f5f5f5; font-weight:600; }
-.approval-table .stamp-cell { width:80px; height:70px; vertical-align:middle; }
-.stamp { display:inline-flex; flex-direction:column; align-items:center; }
-.stamp-circle { width:48px; height:48px; border:2px solid #c0392b; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#c0392b; font-size:13px; font-weight:700; }
-.stamp-circle.rejected { border-color:#666; color:#666; }
-.stamp-name { font-size:11px; color:#333; margin-top:2px; }
-.stamp-date { font-size:10px; color:#888; }
-.stamp-pending { color:#999; font-size:12px; }
+/* Forms */
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#555;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;}
+.form-group textarea{min-height:200px;resize:vertical;line-height:1.8;}
+.form-row{display:flex;gap:16px;}
+.form-row .form-group{flex:1;}
 
-.doc-detail-table { width:100%; border-collapse:collapse; margin-bottom:20px; clear:both; }
-.doc-detail-table th, .doc-detail-table td { border:1px solid #999; padding:8px 16px; font-size:13px; }
-.doc-detail-table th { background:#f5f5f5; font-weight:600; width:100px; text-align:center; }
+.approver-slot{display:flex;align-items:center;gap:8px;padding:8px;background:#f8f9fa;border-radius:6px;margin-bottom:8px;}
+.approver-slot select{flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;}
+.approver-slot .sl{font-size:12px;color:#888;width:60px;flex-shrink:0;}
+.rm-btn{background:none;border:none;color:#999;cursor:pointer;font-size:16px;padding:0 4px;}
+.rm-btn:hover{color:#c62828;}
+.add-btn{padding:6px 12px;border:1px dashed #bbb;background:transparent;border-radius:6px;font-size:12px;color:#888;cursor:pointer;width:100%;margin-top:4px;}
+.add-btn:hover{border-color:#2196F3;color:#2196F3;}
 
-.doc-body { margin-top:16px; padding:20px 0; min-height:200px; white-space:pre-wrap; line-height:1.8; font-size:14px; }
-.doc-body-label { text-align:center; color:#888; margin-top:16px; font-size:13px; }
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.modal{background:#fff;border-radius:12px;padding:24px;width:480px;max-width:90%;max-height:90vh;overflow-y:auto;}
+.modal h3{margin-bottom:16px;font-size:18px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
 
-/* Sidebar - Approval Line */
-.sidebar-card { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:16px; overflow:hidden; }
-.sidebar-card-header { padding:12px 16px; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; gap:8px; }
-.sidebar-card-header h4 { font-size:14px; }
-.sidebar-tab { display:flex; border-bottom:1px solid #e0e0e0; }
-.sidebar-tab .tab { flex:1; text-align:center; padding:8px; font-size:12px; cursor:pointer; border-bottom:2px solid transparent; }
-.sidebar-tab .tab.active { color:#1976D2; border-bottom-color:#1976D2; font-weight:600; }
+/* Login & Register */
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a237e,#0d47a1,#01579b);}
+.login-box{background:#fff;border-radius:16px;padding:48px 40px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.login-box h2{text-align:center;margin-bottom:8px;font-size:22px;}
+.login-box .subtitle{text-align:center;color:#888;font-size:13px;margin-bottom:32px;}
+.user-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
+.user-card{padding:10px;border:2px solid #e0e0e0;border-radius:8px;cursor:pointer;text-align:center;transition:.15s;}
+.user-card:hover{border-color:#1976D2;background:#e3f2fd;}
+.user-card .cn{font-size:14px;font-weight:600;}
+.user-card .cr{font-size:11px;color:#888;}
+.login-divider{text-align:center;margin:20px 0;color:#aaa;font-size:12px;position:relative;}
+.login-divider::before,.login-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#ddd;}
+.login-divider::before{left:0;}
+.login-divider::after{right:0;}
 
-.approval-line-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #f0f0f0; }
-.approval-line-item:last-child { border-bottom:none; }
-.approval-line-item.current { background:#fff8e1; }
-.approval-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; color:#fff; flex-shrink:0; }
-.approval-line-info { flex:1; }
-.approval-line-info .name { font-size:13px; font-weight:600; }
-.approval-line-info .dept { font-size:11px; color:#888; }
-.approval-line-info .time { font-size:11px; color:#aaa; }
-.approval-line-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:10px; }
-.approval-line-status.done { background:#e8f5e9; color:#2e7d32; }
-.approval-line-status.waiting { background:#fff3e0; color:#e65100; }
-.approval-line-status.rejected { background:#ffebee; color:#c62828; }
+/* Settings */
+.settings-page{max-width:800px;margin:0 auto;}
+.settings-section{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:24px;margin-bottom:20px;}
+.settings-section h3{font-size:16px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #eee;}
+.setting-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f5;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row label{width:120px;font-size:13px;font-weight:600;flex-shrink:0;}
+.setting-row input,.setting-row select{flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:13px;}
+.user-list-item{display:flex;align-items:center;gap:12px;padding:10px;background:#f8f9fa;border-radius:6px;margin-bottom:8px;}
+.user-list-item .uinfo{flex:1;}
+.user-list-item .uname{font-weight:600;font-size:13px;}
+.user-list-item .urole{font-size:11px;color:#888;}
 
-/* Form */
-.form-group { margin-bottom:16px; }
-.form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#555; }
-.form-group input, .form-group select, .form-group textarea { width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit; }
-.form-group textarea { min-height:300px; resize:vertical; line-height:1.8; }
-.form-row { display:flex; gap:16px; }
-.form-row .form-group { flex:1; }
+/* Calendar */
+.calendar-wrap{max-width:1000px;margin:0 auto;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-header h3{font-size:18px;}
+.cal-nav{display:flex;align-items:center;gap:12px;}
+.cal-nav button{padding:6px 12px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-size:14px;}
+.cal-nav button:hover{background:#f0f0f0;}
+.cal-nav span{font-size:16px;font-weight:600;min-width:160px;text-align:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;}
+.cal-day-header{padding:10px;text-align:center;font-size:12px;font-weight:600;color:#666;background:#f8f9fa;border-bottom:1px solid #e0e0e0;}
+.cal-day-header:first-child{color:#e74c3c;}
+.cal-day-header:last-child{color:#1976D2;}
+.cal-cell{min-height:100px;padding:6px;border:1px solid #f0f0f0;cursor:pointer;transition:.1s;vertical-align:top;}
+.cal-cell:hover{background:#f8fbff;}
+.cal-cell.other-month{background:#fafafa;}
+.cal-cell.other-month .day-num{color:#ccc;}
+.cal-cell.today{background:#e3f2fd;}
+.cal-cell .day-num{font-size:12px;font-weight:600;margin-bottom:4px;}
+.cal-cell:nth-child(7n+1) .day-num{color:#e74c3c;}
+.cal-cell:nth-child(7n) .day-num{color:#1976D2;}
+.cal-event{font-size:10px;padding:2px 4px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.cal-event.vacation{background:#fff3e0;color:#e65100;border-left:3px solid #ff9800;}
+.cal-event.event{background:#e3f2fd;color:#1565c0;border-left:3px solid #2196F3;}
+.cal-event.holiday{background:#ffebee;color:#c62828;border-left:3px solid #e74c3c;}
 
-.approval-line-editor { background:#fff; border:1px solid #ddd; border-radius:8px; padding:16px; margin-bottom:16px; }
-.approval-line-editor h4 { font-size:14px; margin-bottom:12px; }
-.approver-slot { display:flex; align-items:center; gap:8px; padding:8px; background:#f8f9fa; border-radius:6px; margin-bottom:8px; }
-.approver-slot select { flex:1; padding:6px 8px; border:1px solid #ddd; border-radius:4px; font-size:13px; }
-.approver-slot .slot-label { font-size:12px; color:#888; width:60px; flex-shrink:0; }
-.add-approver-btn { padding:6px 12px; border:1px dashed #bbb; background:transparent; border-radius:6px; font-size:12px; color:#888; cursor:pointer; width:100%; margin-top:4px; }
-.add-approver-btn:hover { border-color:#2196F3; color:#2196F3; }
-.remove-approver { background:none; border:none; color:#999; cursor:pointer; font-size:16px; padding:0 4px; }
-.remove-approver:hover { color:#c62828; }
+/* Tabs */
+.tab-bar{display:flex;border-bottom:2px solid #e0e0e0;margin-bottom:16px;}
+.tab-btn{padding:10px 20px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#888;transition:.15s;}
+.tab-btn:hover{color:#333;}
+.tab-btn.active{color:#1976D2;border-bottom-color:#1976D2;font-weight:600;}
 
-/* Reject Modal */
-.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:1000; }
-.modal { background:#fff; border-radius:12px; padding:24px; width:400px; max-width:90%; }
-.modal h3 { margin-bottom:16px; }
-.modal textarea { width:100%; min-height:100px; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; margin-bottom:16px; }
-.modal-actions { display:flex; justify-content:flex-end; gap:8px; }
-.modal-actions .btn { padding:8px 20px; border:1px solid #ddd; background:#fff; border-radius:6px; font-size:13px; cursor:pointer; }
-.modal-actions .btn.danger { background:#e74c3c; color:#fff; border-color:#e74c3c; }
+.empty-state{text-align:center;padding:60px 20px;color:#999;}
+.empty-state p{font-size:15px;}
 
-.empty-state { text-align:center; padding:60px 20px; color:#999; }
-.empty-state p { font-size:15px; margin-bottom:8px; }
+/* Vacation fields */
+.vacation-fields{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:16px;margin-bottom:16px;}
+.vacation-fields h4{font-size:14px;margin-bottom:12px;color:#f57f17;}
 
-/* Login */
-.login-page { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#1a237e,#0d47a1,#01579b); }
-.login-box { background:#fff; border-radius:16px; padding:48px 40px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,.2); }
-.login-box h2 { text-align:center; margin-bottom:8px; font-size:22px; }
-.login-box .subtitle { text-align:center; color:#888; font-size:13px; margin-bottom:32px; }
-.login-box .form-group { margin-bottom:20px; }
-.login-box .btn-login { width:100%; padding:12px; background:#1976D2; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; transition:background .2s; }
-.login-box .btn-login:hover { background:#1565c0; }
-.user-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:20px; }
-.user-card { padding:10px; border:2px solid #e0e0e0; border-radius:8px; cursor:pointer; text-align:center; transition:all .15s; }
-.user-card:hover { border-color:#1976D2; background:#e3f2fd; }
-.user-card .card-name { font-size:14px; font-weight:600; }
-.user-card .card-role { font-size:11px; color:#888; }
-
-/* Responsive */
-@media(max-width:900px) {
-  .left-panel { display:none; }
-  .doc-sidebar { display:none; }
-  .doc-paper { padding:20px; }
+@media(max-width:900px){
+  .left-panel{display:none;}
+  .doc-sidebar{display:none;}
+  .doc-paper{padding:20px;}
+  .form-row{flex-direction:column;gap:0;}
 }
 </style>
 </head>
 <body>
-
 <div id="app"></div>
-
 <script>
-// ===== DATA =====
-const USERS = [
-  { id:'u1', name:'고단비', role:'대리', dept:'영업본부', color:'#2196F3' },
-  { id:'u2', name:'김상후', role:'대표이사', dept:'다우그룹', color:'#4caf50' },
-  { id:'u3', name:'구정모', role:'부사장', dept:'다우그룹', color:'#ff9800' },
-  { id:'u4', name:'이수진', role:'과장', dept:'기획부', color:'#9c27b0' },
-  { id:'u5', name:'박민호', role:'부장', dept:'개발본부', color:'#e91e63' },
-  { id:'u6', name:'정하윤', role:'사원', dept:'영업본부', color:'#00bcd4' },
+// ============ DATA LAYER ============
+const DEFAULT_USERS = [
+  {id:'u1',name:'고단비',role:'대리',dept:'영업본부',color:'#2196F3',pw:'1234'},
+  {id:'u2',name:'김상후',role:'대표이사',dept:'다우그룹',color:'#4caf50',pw:'1234'},
+  {id:'u3',name:'구정모',role:'부사장',dept:'다우그룹',color:'#ff9800',pw:'1234'},
+  {id:'u4',name:'이수진',role:'과장',dept:'기획부',color:'#9c27b0',pw:'1234'},
+  {id:'u5',name:'박민호',role:'부장',dept:'개발본부',color:'#e91e63',pw:'1234'},
+  {id:'u6',name:'정하윤',role:'사원',dept:'영업본부',color:'#00bcd4',pw:'1234'},
 ];
 
-const POSITIONS_ORDER = ['사원','대리','과장','부장','부사장','대표이사'];
+const DEFAULT_DOC_TYPES = [
+  {id:'dt1',name:'업무기안',fields:['title','execDate','coopDept','agreement','content']},
+  {id:'dt2',name:'휴가신청서',fields:['title','vacStart','vacEnd','vacType','vacReason'],isVacation:true},
+  {id:'dt3',name:'지출결의서',fields:['title','expenseAmount','expensePurpose','content']},
+  {id:'dt4',name:'출장신청서',fields:['title','tripDest','tripStart','tripEnd','tripPurpose']},
+];
 
-function getPositionRank(role) { return POSITIONS_ORDER.indexOf(role); }
+const DEFAULT_SETTINGS = {
+  companyName: '다우그룹',
+  docNumFormat: 'DOC-{YYYY}-{NUM:4}', // {YYYY}=year, {NUM:N}=zero-padded counter
+  docCounter: 0,
+};
 
-// LocalStorage helpers
-function loadDocs() {
-  try { return JSON.parse(localStorage.getItem('ea_docs')) || []; } catch { return []; }
+const COLORS = ['#2196F3','#4caf50','#ff9800','#9c27b0','#e91e63','#00bcd4','#795548','#607d8b','#f44336','#3f51b5'];
+
+function LS(k,v){ if(v===undefined){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}} localStorage.setItem(k,JSON.stringify(v)); }
+
+function getUsers(){ return LS('ea_users') || DEFAULT_USERS; }
+function setUsers(u){ LS('ea_users',u); }
+function getDocs(){ return LS('ea_docs') || []; }
+function setDocs(d){ LS('ea_docs',d); }
+function getDocTypes(){ return LS('ea_doctypes') || DEFAULT_DOC_TYPES; }
+function setDocTypes(t){ LS('ea_doctypes',t); }
+function getSettings(){ return LS('ea_settings') || DEFAULT_SETTINGS; }
+function setSettings(s){ LS('ea_settings',s); }
+function getEvents(){ return LS('ea_events') || []; }
+function setEvents(e){ LS('ea_events',e); }
+function getCurUser(){ try{return JSON.parse(sessionStorage.getItem('ea_user'));}catch{return null;} }
+function setCurUser(u){ sessionStorage.setItem('ea_user',JSON.stringify(u)); }
+
+// ============ STATE ============
+let S = {
+  user: getCurUser(),
+  view: 'pending', // pending,received,scheduled,mydrafts,drafts,myapproved,deptall,view,create,settings,calendar,register
+  docId: null,
+  modal: null, // null | 'reject' | 'event' | 'eventView'
+  calYear: new Date().getFullYear(),
+  calMonth: new Date().getMonth(),
+  calSelectedDate: null,
+  settingsTab: 'profile',
+  editEventId: null,
+  loginMode: 'select', // 'select' | 'password' | 'register'
+  loginUserId: null,
+};
+
+// ============ HELPERS ============
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(iso){if(!iso)return '';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDateTime(iso){if(!iso)return '';const d=new Date(iso);const days=['일','월','화','수','목','금','토'];return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}(${days[d.getDay()]})`;}
+function fmtFull(iso){if(!iso)return '';const d=new Date(iso);return `${fmtDate(iso)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+function fmtDateInput(iso){if(!iso)return '';const d=new Date(iso);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function genDocNum(){
+  const s=getSettings();
+  s.docCounter=(s.docCounter||0)+1;
+  setSettings(s);
+  const y=new Date().getFullYear();
+  let fmt=s.docNumFormat||'DOC-{YYYY}-{NUM:4}';
+  fmt=fmt.replace('{YYYY}',y);
+  fmt=fmt.replace(/\{NUM:(\d+)\}/,(m,n)=>String(s.docCounter).padStart(parseInt(n),'0'));
+  return fmt;
 }
-function saveDocs(docs) { localStorage.setItem('ea_docs', JSON.stringify(docs)); }
-function loadUser() {
-  try { return JSON.parse(sessionStorage.getItem('ea_user')); } catch { return null; }
-}
-function saveUser(u) { sessionStorage.setItem('ea_user', JSON.stringify(u)); }
 
-// State
-let currentUser = loadUser();
-let docs = loadDocs();
-let currentView = 'pending'; // pending, received, completed, all, view, create
-let currentDocId = null;
-let rejectModal = false;
-let docCounter = loadDocCounter();
-
-function loadDocCounter() {
-  return parseInt(localStorage.getItem('ea_counter') || '0');
-}
-function saveDocCounter(n) { docCounter = n; localStorage.setItem('ea_counter', n.toString()); }
-
-function generateDocNumber() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const num = ++docCounter;
-  saveDocCounter(docCounter);
-  return `DOC-${y}-${String(num).padStart(4,'0')}`;
-}
-
-function getDocStatus(doc) {
-  if (doc.status === 'rejected') return 'rejected';
-  if (doc.status === 'draft') return 'draft';
-  const allApproved = doc.approvalLine.every(a => a.status === 'approved');
-  if (allApproved) return 'approved';
+function getUser(id){return getUsers().find(u=>u.id===id);}
+function docStatus(doc){
+  if(doc.status==='rejected')return 'rejected';
+  if(doc.status==='draft')return 'draft';
+  if(doc.approvalLine.every(a=>a.status==='approved'))return 'approved';
   return 'pending';
 }
-
-function getDocStatusLabel(doc) {
-  const s = getDocStatus(doc);
-  return { draft:'임시저장', pending:'결재 진행중', approved:'결재 완료', rejected:'반려' }[s];
+function docStatusLabel(doc){ return {draft:'임시저장',pending:'결재 진행중',approved:'결재 완료',rejected:'반려'}[docStatus(doc)]; }
+function prevApproved(doc,uid){
+  const i=doc.approvalLine.findIndex(a=>a.userId===uid);
+  if(i<=0)return true;
+  return doc.approvalLine[i-1].status==='approved';
 }
 
-// ===== RENDER =====
-function render() {
-  const app = document.getElementById('app');
-  if (!currentUser) {
-    app.innerHTML = renderLogin();
-    return;
+// ============ RENDER ============
+function R(){
+  const app=document.getElementById('app');
+  if(!S.user){app.innerHTML=renderAuth();return;}
+  app.innerHTML=`<div class="app">${renderIconSidebar()}${renderLeftPanel()}<div class="main-area">${renderTopBar()}<div class="content">${renderContent()}</div></div></div>${renderModal()}`;
+}
+
+// ---- AUTH ----
+function renderAuth(){
+  const users=getUsers();
+  if(S.loginMode==='register') return renderRegister();
+  if(S.loginMode==='password'){
+    const u=getUser(S.loginUserId);
+    return `<div class="login-page"><div class="login-box">
+      <h2>전자결재 시스템</h2>
+      <p class="subtitle">${esc(u.name)} ${esc(u.role)}(으)로 로그인</p>
+      <div class="form-group"><label>비밀번호</label><input type="password" id="pw-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="login-error" style="color:#c62828;font-size:12px;margin-bottom:12px;"></div>
+      <button class="btn primary" style="width:100%;padding:12px;font-size:15px;" onclick="doLogin()">로그인</button>
+      <p style="text-align:center;margin-top:12px;"><a style="color:#1976D2;font-size:13px;cursor:pointer" onclick="S.loginMode='select';R();">&#8592; 돌아가기</a></p>
+    </div></div>`;
   }
-  app.innerHTML = `
-    <div class="app">
-      ${renderIconSidebar()}
-      ${renderLeftPanel()}
-      <div class="main-area">
-        ${renderTopBar()}
-        <div class="content">${renderContent()}</div>
-      </div>
+  return `<div class="login-page"><div class="login-box">
+    <h2>전자결재 시스템</h2>
+    <p class="subtitle">${esc(getSettings().companyName)} | 사용자를 선택하세요</p>
+    <div class="user-cards">${users.map(u=>`
+      <div class="user-card" onclick="S.loginUserId='${u.id}';S.loginMode='password';R();">
+        <div class="cn">${esc(u.name)}</div>
+        <div class="cr">${esc(u.role)} | ${esc(u.dept)}</div>
+      </div>`).join('')}
     </div>
-    ${rejectModal ? renderRejectModal() : ''}
-  `;
+    <div class="login-divider">또는</div>
+    <button class="btn primary" style="width:100%;padding:12px;font-size:14px;" onclick="S.loginMode='register';R();">회원가입</button>
+  </div></div>`;
 }
 
-function renderLogin() {
-  return `
-    <div class="login-page">
-      <div class="login-box">
-        <h2>전자결재 시스템</h2>
-        <p class="subtitle">사용자를 선택하여 로그인하세요</p>
-        <div class="user-cards">
-          ${USERS.map(u => `
-            <div class="user-card" onclick="login('${u.id}')">
-              <div class="card-name">${u.name}</div>
-              <div class="card-role">${u.role} | ${u.dept}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+function renderRegister(){
+  const depts=[...new Set(getUsers().map(u=>u.dept))];
+  return `<div class="login-page"><div class="login-box">
+    <h2>회원가입</h2>
+    <p class="subtitle">새 계정을 등록하세요</p>
+    <div class="form-group"><label>이름</label><input id="reg-name" placeholder="이름"></div>
+    <div class="form-group"><label>직급</label>
+      <select id="reg-role"><option>사원</option><option>대리</option><option>과장</option><option>부장</option><option>부사장</option><option>대표이사</option></select></div>
+    <div class="form-group"><label>부서</label>
+      <input id="reg-dept" list="dept-list" placeholder="부서명 입력">
+      <datalist id="dept-list">${depts.map(d=>`<option value="${esc(d)}">`).join('')}</datalist></div>
+    <div class="form-group"><label>비밀번호</label><input type="password" id="reg-pw" placeholder="비밀번호"></div>
+    <div class="form-group"><label>비밀번호 확인</label><input type="password" id="reg-pw2" placeholder="비밀번호 확인"></div>
+    <div id="reg-error" style="color:#c62828;font-size:12px;margin-bottom:12px;"></div>
+    <button class="btn primary" style="width:100%;padding:12px;font-size:14px;" onclick="doRegister()">가입하기</button>
+    <p style="text-align:center;margin-top:12px;"><a style="color:#1976D2;font-size:13px;cursor:pointer" onclick="S.loginMode='select';R();">&#8592; 로그인으로 돌아가기</a></p>
+  </div></div>`;
+}
+
+// ---- SIDEBAR ----
+function renderIconSidebar(){
+  const docs2=getDocs();
+  const pc=docs2.filter(d=>{const l=d.approvalLine.find(a=>a.userId===S.user.id);return l&&l.status==='pending'&&docStatus(d)==='pending'&&prevApproved(d,S.user.id);}).length;
+  return `<div class="icon-sidebar">
+    <div class="ib ${['pending','received','scheduled','mydrafts','drafts','myapproved','deptall','view','create'].includes(S.view)?'active':''}" onclick="S.view='pending';R();" title="전자결재">&#128203;${pc?`<span class="badge">${pc}</span>`:''}</div>
+    <div class="ib ${S.view==='calendar'?'active':''}" onclick="S.view='calendar';R();" title="캘린더">&#128197;</div>
+    <div class="ib ${S.view==='settings'?'active':''}" onclick="S.view='settings';R();" title="설정">&#9881;</div>
+  </div>`;
+}
+
+function renderLeftPanel(){
+  if(S.view==='settings'||S.view==='calendar') return `<div class="left-panel"><h3>&#9776; ${S.view==='settings'?'설정':'캘린더'}</h3></div>`;
+  const docs2=getDocs();
+  const u=S.user;
+  const pc=docs2.filter(d=>{if(d.status==='draft')return false;const l=d.approvalLine.find(a=>a.userId===u.id);return l&&l.status==='pending'&&docStatus(d)==='pending'&&prevApproved(d,u.id);}).length;
+  const mc=docs2.filter(d=>d.authorId===u.id).length;
+  const dc=docs2.filter(d=>d.authorId===u.id&&d.status==='draft').length;
+  const ac=docs2.filter(d=>{const l=d.approvalLine.find(a=>a.userId===u.id);return l&&(l.status==='approved'||l.status==='rejected');}).length;
+  return `<div class="left-panel">
+    <h3>&#9776; 전자결재</h3>
+    <div class="new-doc-btn" onclick="S.view='create';R();">+ 새 결재 진행</div>
+    <div class="nav-section"><div class="nav-section-title">결재하기</div>
+      <div class="nav-item ${S.view==='pending'?'active':''}" onclick="S.view='pending';R();">&#128203; 결재 대기 문서 ${pc?`<span class="cnt alert">${pc}</span>`:''}</div>
+      <div class="nav-item ${S.view==='received'?'active':''}" onclick="S.view='received';R();">&#128229; 결재 수신 문서</div>
+      <div class="nav-item ${S.view==='scheduled'?'active':''}" onclick="S.view='scheduled';R();">&#128197; 결재 예정 문서</div>
     </div>
-  `;
-}
-
-function renderIconSidebar() {
-  const pending = docs.filter(d => {
-    const line = d.approvalLine.find(a => a.userId === currentUser.id);
-    return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
-  }).length;
-  return `
-    <div class="icon-sidebar">
-      <div class="icon-btn active" title="전자결재">&#x1F4CB;</div>
+    <div class="nav-section"><div class="nav-section-title">개인 문서함</div>
+      <div class="nav-item ${S.view==='mydrafts'?'active':''}" onclick="S.view='mydrafts';R();">&#128221; 기안 문서함 ${mc?`<span class="cnt">${mc}</span>`:''}</div>
+      <div class="nav-item ${S.view==='drafts'?'active':''}" onclick="S.view='drafts';R();">&#128190; 임시 저장함 ${dc?`<span class="cnt">${dc}</span>`:''}</div>
+      <div class="nav-item ${S.view==='myapproved'?'active':''}" onclick="S.view='myapproved';R();">&#9989; 결재 문서함 ${ac?`<span class="cnt">${ac}</span>`:''}</div>
     </div>
-  `;
-}
-
-function isPreviousApproved(doc, userId) {
-  const idx = doc.approvalLine.findIndex(a => a.userId === userId);
-  if (idx <= 0) return true;
-  return doc.approvalLine[idx-1].status === 'approved';
-}
-
-function renderLeftPanel() {
-  const pendingCount = docs.filter(d => {
-    const line = d.approvalLine.find(a => a.userId === currentUser.id);
-    return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
-  }).length;
-  const myDrafts = docs.filter(d => d.authorId === currentUser.id && d.status === 'draft').length;
-  const myDocs = docs.filter(d => d.authorId === currentUser.id).length;
-  const completed = docs.filter(d => {
-    const line = d.approvalLine.find(a => a.userId === currentUser.id);
-    return line && (line.status === 'approved' || line.status === 'rejected');
-  }).length;
-
-  return `
-    <div class="left-panel">
-      <h3>&#9776; 전자결재</h3>
-      <div class="new-doc-btn" onclick="goCreate()">+ 새 결재 진행</div>
-      <div class="nav-section">
-        <div class="nav-section-title">결재하기</div>
-        <div class="nav-item ${currentView==='pending'?'active':''}" onclick="goView('pending')">
-          &#128203; 결재 대기 문서
-          ${pendingCount > 0 ? `<span class="count alert">${pendingCount}</span>` : ''}
-        </div>
-        <div class="nav-item ${currentView==='received'?'active':''}" onclick="goView('received')">
-          &#128229; 결재 수신 문서
-        </div>
-        <div class="nav-item ${currentView==='scheduled'?'active':''}" onclick="goView('scheduled')">
-          &#128197; 결재 예정 문서
-        </div>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">개인 문서함</div>
-        <div class="nav-item ${currentView==='mydrafts'?'active':''}" onclick="goView('mydrafts')">
-          &#128221; 기안 문서함 ${myDocs > 0 ? `<span class="count">${myDocs}</span>` : ''}
-        </div>
-        <div class="nav-item ${currentView==='drafts'?'active':''}" onclick="goView('drafts')">
-          &#128190; 임시 저장함 ${myDrafts > 0 ? `<span class="count">${myDrafts}</span>` : ''}
-        </div>
-        <div class="nav-item ${currentView==='myapproved'?'active':''}" onclick="goView('myapproved')">
-          &#9989; 결재 문서함 ${completed > 0 ? `<span class="count">${completed}</span>` : ''}
-        </div>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">부서 문서함</div>
-        <div class="nav-item ${currentView==='deptall'?'active':''}" onclick="goView('deptall')">
-          &#127970; ${currentUser.dept}
-        </div>
-      </div>
+    <div class="nav-section"><div class="nav-section-title">부서 문서함</div>
+      <div class="nav-item ${S.view==='deptall'?'active':''}" onclick="S.view='deptall';R();">&#127970; ${esc(u.dept)}</div>
     </div>
-  `;
+  </div>`;
 }
 
-function renderTopBar() {
-  const titles = {
-    pending:'결재 대기 문서', received:'결재 수신 문서', scheduled:'결재 예정 문서',
-    mydrafts:'기안 문서함', drafts:'임시 저장함', myapproved:'결재 문서함',
-    deptall: currentUser.dept + ' 문서함', view:'문서 보기', create:'새 결재 작성'
-  };
-  return `
-    <div class="top-bar">
-      <h2>${titles[currentView] || '전자결재'}</h2>
-      <span class="breadcrumb">전자결재 &gt; ${titles[currentView] || ''}</span>
-      <span class="spacer"></span>
-      <div class="user-info">
-        <div class="user-avatar" style="background:${currentUser.color}">${currentUser.name[0]}</div>
-        <span>${currentUser.name} ${currentUser.role}</span>
-        <span style="color:#aaa;cursor:pointer;margin-left:8px" onclick="logout()">로그아웃</span>
-      </div>
-    </div>
-  `;
+function renderTopBar(){
+  const titles={pending:'결재 대기 문서',received:'결재 수신 문서',scheduled:'결재 예정 문서',mydrafts:'기안 문서함',drafts:'임시 저장함',myapproved:'결재 문서함',deptall:S.user.dept+' 문서함',view:'문서 보기',create:'새 결재 작성',settings:'설정',calendar:'캘린더'};
+  return `<div class="top-bar">
+    <h2>${titles[S.view]||'전자결재'}</h2><span class="bc">${esc(getSettings().companyName)} &gt; ${titles[S.view]||''}</span><span class="sp"></span>
+    <div class="user-info"><div class="user-avatar" style="background:${S.user.color}">${S.user.name[0]}</div><span>${esc(S.user.name)} ${esc(S.user.role)}</span>
+    <span style="color:#aaa;cursor:pointer;margin-left:8px" onclick="logout()">로그아웃</span></div>
+  </div>`;
 }
 
-function renderContent() {
-  if (currentView === 'create') return renderCreateForm();
-  if (currentView === 'view') return renderDocView();
-  return renderDocList();
-}
-
-function getFilteredDocs() {
-  switch(currentView) {
-    case 'pending':
-      return docs.filter(d => {
-        if (d.status === 'draft') return false;
-        const line = d.approvalLine.find(a => a.userId === currentUser.id);
-        return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
-      });
-    case 'received':
-      return docs.filter(d => {
-        if (d.status === 'draft') return false;
-        const line = d.approvalLine.find(a => a.userId === currentUser.id);
-        return line && d.authorId !== currentUser.id;
-      });
-    case 'scheduled':
-      return docs.filter(d => {
-        if (d.status === 'draft') return false;
-        const line = d.approvalLine.find(a => a.userId === currentUser.id);
-        return line && line.status === 'pending' && !isPreviousApproved(d, currentUser.id);
-      });
-    case 'mydrafts':
-      return docs.filter(d => d.authorId === currentUser.id);
-    case 'drafts':
-      return docs.filter(d => d.authorId === currentUser.id && d.status === 'draft');
-    case 'myapproved':
-      return docs.filter(d => {
-        const line = d.approvalLine.find(a => a.userId === currentUser.id);
-        return line && (line.status === 'approved' || line.status === 'rejected');
-      });
-    case 'deptall':
-      return docs.filter(d => {
-        const author = USERS.find(u => u.id === d.authorId);
-        return author && author.dept === currentUser.dept && d.status !== 'draft';
-      });
-    default:
-      return docs;
+function renderContent(){
+  switch(S.view){
+    case 'create': return renderCreateForm();
+    case 'view': return renderDocView();
+    case 'settings': return renderSettings();
+    case 'calendar': return renderCalendar();
+    default: return renderDocList();
   }
 }
 
-function renderDocList() {
-  const filtered = getFilteredDocs();
-  if (filtered.length === 0) {
-    return `<div class="empty-state"><p>문서가 없습니다.</p></div>`;
+// ---- DOC LIST ----
+function getFilteredDocs(){
+  const docs2=getDocs(),u=S.user;
+  switch(S.view){
+    case 'pending': return docs2.filter(d=>{if(d.status==='draft')return false;const l=d.approvalLine.find(a=>a.userId===u.id);return l&&l.status==='pending'&&docStatus(d)==='pending'&&prevApproved(d,u.id);});
+    case 'received': return docs2.filter(d=>{if(d.status==='draft')return false;const l=d.approvalLine.find(a=>a.userId===u.id);return l&&d.authorId!==u.id;});
+    case 'scheduled': return docs2.filter(d=>{if(d.status==='draft')return false;const l=d.approvalLine.find(a=>a.userId===u.id);return l&&l.status==='pending'&&!prevApproved(d,u.id);});
+    case 'mydrafts': return docs2.filter(d=>d.authorId===u.id);
+    case 'drafts': return docs2.filter(d=>d.authorId===u.id&&d.status==='draft');
+    case 'myapproved': return docs2.filter(d=>{const l=d.approvalLine.find(a=>a.userId===u.id);return l&&(l.status==='approved'||l.status==='rejected');});
+    case 'deptall': return docs2.filter(d=>{const a=getUser(d.authorId);return a&&a.dept===u.dept&&d.status!=='draft';});
+    default: return docs2;
   }
-  return `
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th>상태</th>
-          <th>문서번호</th>
-          <th>제목</th>
-          <th>기안자</th>
-          <th>소속</th>
-          <th>기안일</th>
-          <th>결재현황</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(d => {
-          const author = USERS.find(u => u.id === d.authorId);
-          const status = getDocStatus(d);
-          const statusCls = status;
-          const approved = d.approvalLine.filter(a => a.status === 'approved').length;
-          const total = d.approvalLine.length;
-          return `
-            <tr>
-              <td><span class="status-badge ${statusCls}">${getDocStatusLabel(d)}</span></td>
-              <td>${d.docNumber || '-'}</td>
-              <td><span class="doc-title-link" onclick="viewDoc('${d.id}')">${d.title}</span></td>
-              <td>${author ? author.name : ''}</td>
-              <td>${author ? author.dept : ''}</td>
-              <td>${d.createdAt ? new Date(d.createdAt).toLocaleDateString('ko-KR') : ''}</td>
-              <td>${approved}/${total} 승인</td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
 }
 
-function renderCreateForm() {
-  const otherUsers = USERS.filter(u => u.id !== currentUser.id);
-  const higherUsers = USERS.filter(u => u.id !== currentUser.id);
-  return `
-    <div class="doc-container">
-      <div class="doc-main">
-        <div class="doc-toolbar">
-          <button class="btn primary" onclick="submitDoc()">&#9993; 결재 상신</button>
-          <button class="btn" onclick="saveDraft()">&#128190; 임시 저장</button>
-          <button class="btn danger" onclick="goView('pending')">&#10005; 취소</button>
-        </div>
-        <div class="doc-paper">
-          <h1>업 무 기 안</h1>
-          <div class="form-row">
-            <div class="form-group">
-              <label>제목</label>
-              <input type="text" id="doc-title" placeholder="문서 제목을 입력하세요">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>시행일자</label>
-              <input type="date" id="doc-exec-date">
-            </div>
-            <div class="form-group">
-              <label>협조부서</label>
-              <input type="text" id="doc-coop-dept" placeholder="협조부서">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>합의</label>
-            <input type="text" id="doc-agreement" placeholder="합의 내용">
-          </div>
-          <div class="form-group">
-            <label>내용</label>
-            <textarea id="doc-content" placeholder="문서 내용을 입력하세요"></textarea>
-          </div>
-        </div>
+function renderDocList(){
+  const filtered=getFilteredDocs();
+  if(!filtered.length) return `<div class="empty-state"><p>문서가 없습니다.</p></div>`;
+  return `<table class="doc-table"><thead><tr><th>상태</th><th>문서종류</th><th>문서번호</th><th>제목</th><th>기안자</th><th>소속</th><th>기안일</th><th>결재현황</th></tr></thead><tbody>
+    ${filtered.map(d=>{const a=getUser(d.authorId);const st=docStatus(d);const ap=d.approvalLine.filter(x=>x.status==='approved').length;const tot=d.approvalLine.length;const dt=getDocTypes().find(t=>t.id===d.docTypeId);
+    return `<tr><td><span class="status-badge ${st}">${docStatusLabel(d)}</span></td><td>${esc(dt?dt.name:'업무기안')}</td><td>${d.docNumber||'-'}</td><td><span class="doc-title-link" onclick="S.docId='${d.id}';S.view='view';R();">${esc(d.title)}</span></td><td>${esc(a?a.name:'')}</td><td>${esc(a?a.dept:'')}</td><td>${d.createdAt?new Date(d.createdAt).toLocaleDateString('ko-KR'):''}</td><td>${ap}/${tot}</td></tr>`;}).join('')}
+  </tbody></table>`;
+}
+
+// ---- CREATE FORM ----
+function renderCreateForm(){
+  const users=getUsers().filter(u=>u.id!==S.user.id);
+  const dtypes=getDocTypes();
+  return `<div class="doc-container"><div class="doc-main">
+    <div class="doc-toolbar">
+      <button class="btn primary" onclick="submitDoc()">&#9993; 결재 상신</button>
+      <button class="btn" onclick="saveDraft()">&#128190; 임시 저장</button>
+      <button class="btn danger" onclick="S.view='pending';R();">&#10005; 취소</button>
+    </div>
+    <div class="doc-paper">
+      <div class="form-group"><label>문서 종류</label>
+        <select id="doc-type" onchange="onDocTypeChange()">
+          ${dtypes.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+        </select>
       </div>
-      <div class="doc-sidebar">
-        <div class="sidebar-card">
-          <div class="sidebar-card-header"><h4>&#128100; 기안자 정보</h4></div>
-          <div style="padding:12px 16px;font-size:13px;">
-            <p><b>이름:</b> ${currentUser.name}</p>
-            <p><b>직급:</b> ${currentUser.role}</p>
-            <p><b>소속:</b> ${currentUser.dept}</p>
-          </div>
+      <div id="doc-type-title-area"><h1 id="doc-type-title" style="text-align:center;font-size:28px;letter-spacing:12px;margin:24px 0;">${esc(dtypes[0]?dtypes[0].name:'업무기안')}</h1></div>
+      <div class="form-group"><label>제목</label><input id="doc-title" placeholder="문서 제목"></div>
+      <div id="dynamic-fields">${renderDynamicFields(dtypes[0]?dtypes[0].id:'dt1')}</div>
+    </div>
+  </div>
+  <div class="doc-sidebar">
+    <div class="sidebar-card"><div class="sidebar-card-header"><h4>&#128100; 기안자 정보</h4></div>
+      <div style="padding:12px 16px;font-size:13px;"><p><b>이름:</b> ${esc(S.user.name)}</p><p><b>직급:</b> ${esc(S.user.role)}</p><p><b>소속:</b> ${esc(S.user.dept)}</p></div>
+    </div>
+    <div class="sidebar-card"><div class="sidebar-card-header"><h4>&#128203; 결재선 설정</h4></div>
+      <div style="padding:12px 16px;" id="approval-line-editor">
+        <div id="approver-slots">
+          <div class="approver-slot"><span class="sl">1차 결재</span><select class="approver-select"><option value="">선택</option>${users.map(u=>`<option value="${u.id}">${esc(u.name)} ${esc(u.role)} (${esc(u.dept)})</option>`).join('')}</select><button class="rm-btn" onclick="rmSlot(this)">&#10005;</button></div>
+          <div class="approver-slot"><span class="sl">2차 결재</span><select class="approver-select"><option value="">선택</option>${users.map(u=>`<option value="${u.id}">${esc(u.name)} ${esc(u.role)} (${esc(u.dept)})</option>`).join('')}</select><button class="rm-btn" onclick="rmSlot(this)">&#10005;</button></div>
         </div>
-        <div class="sidebar-card">
-          <div class="sidebar-card-header"><h4>&#128203; 결재선 설정</h4></div>
-          <div style="padding:12px 16px;" id="approval-line-editor">
-            <div id="approver-slots">
-              <div class="approver-slot" data-idx="0">
-                <span class="slot-label">1차 결재</span>
-                <select class="approver-select">
-                  <option value="">선택</option>
-                  ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
-                </select>
-                <button class="remove-approver" onclick="removeApproverSlot(0)">&#10005;</button>
-              </div>
-              <div class="approver-slot" data-idx="1">
-                <span class="slot-label">2차 결재</span>
-                <select class="approver-select">
-                  <option value="">선택</option>
-                  ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
-                </select>
-                <button class="remove-approver" onclick="removeApproverSlot(1)">&#10005;</button>
-              </div>
-            </div>
-            <button class="add-approver-btn" onclick="addApproverSlot()">+ 결재자 추가</button>
-          </div>
-        </div>
+        <button class="add-btn" onclick="addSlot()">+ 결재자 추가</button>
       </div>
     </div>
-  `;
+  </div></div>`;
 }
 
-function renderDocView() {
-  const doc = docs.find(d => d.id === currentDocId);
-  if (!doc) return '<div class="empty-state"><p>문서를 찾을 수 없습니다.</p></div>';
-  const author = USERS.find(u => u.id === doc.authorId);
-  const status = getDocStatus(doc);
-  const isMyTurn = doc.approvalLine.some(a => a.userId === currentUser.id && a.status === 'pending' && isPreviousApproved(doc, currentUser.id)) && status === 'pending';
-  const isAuthor = doc.authorId === currentUser.id;
-
-  return `
-    <div class="doc-container">
-      <div class="doc-main">
-        <div class="doc-toolbar">
-          ${isMyTurn ? `
-            <button class="btn success" onclick="approveDoc('${doc.id}')">&#10003; 승인</button>
-            <button class="btn danger" onclick="rejectModal=true;render()">&#10005; 반려</button>
-          ` : ''}
-          ${isAuthor && status === 'draft' ? `
-            <button class="btn primary" onclick="resubmitDoc('${doc.id}')">&#9993; 결재 상신</button>
-          ` : ''}
-          ${isAuthor && status === 'pending' ? `
-            <button class="btn danger" onclick="cancelDoc('${doc.id}')">&#128281; 결재 회수</button>
-          ` : ''}
-          <button class="btn" onclick="goView('pending')">&#8592; 목록</button>
-          <button class="btn" onclick="printDoc()">&#128424; 인쇄</button>
-        </div>
-        <div class="doc-paper">
-          <h1>업 무 기 안</h1>
-
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
-            <table class="doc-meta-table">
-              <tr><th>기안자</th><td>${author ? author.name : ''}</td></tr>
-              <tr><th>소속</th><td>${author ? author.dept : ''}</td></tr>
-              <tr><th>기안일</th><td>${doc.createdAt ? formatDateTime(doc.createdAt) : ''}</td></tr>
-              <tr><th>문서번호</th><td>${doc.docNumber || '<span style="color:#999">미부여</span>'}</td></tr>
-            </table>
-
-            <table class="approval-table">
-              <tr>
-                <th rowspan="2" style="writing-mode:vertical-lr;letter-spacing:4px;">신<br>청</th>
-                ${doc.approvalLine.map((a,i) => {
-                  const u = USERS.find(x => x.id === a.userId);
-                  return `<th>${u ? u.role : ''}</th>`;
-                }).join('')}
-              </tr>
-              <tr>
-                ${doc.approvalLine.map(a => {
-                  const u = USERS.find(x => x.id === a.userId);
-                  if (a.status === 'approved') {
-                    return `<td class="stamp-cell">
-                      <div class="stamp">
-                        <div class="stamp-circle">승인</div>
-                        <div class="stamp-name">${u ? u.name : ''}</div>
-                        <div class="stamp-date">${a.actionAt ? formatDate(a.actionAt) : ''}</div>
-                      </div>
-                    </td>`;
-                  } else if (a.status === 'rejected') {
-                    return `<td class="stamp-cell">
-                      <div class="stamp">
-                        <div class="stamp-circle rejected">반려</div>
-                        <div class="stamp-name">${u ? u.name : ''}</div>
-                        <div class="stamp-date">${a.actionAt ? formatDate(a.actionAt) : ''}</div>
-                      </div>
-                    </td>`;
-                  } else {
-                    return `<td class="stamp-cell"><span class="stamp-pending">${u ? u.name : ''}</span></td>`;
-                  }
-                }).join('')}
-              </tr>
-            </table>
-          </div>
-
-          <table class="doc-detail-table">
-            <tr><th>시행일자</th><td>${doc.execDate || ''}</td><th>협조부서</th><td>${doc.coopDept || ''}</td></tr>
-            <tr><th>합의</th><td colspan="3">${doc.agreement || ''}</td></tr>
-            <tr><th>제목</th><td colspan="3">${doc.title}</td></tr>
-          </table>
-
-          <p class="doc-body-label">- 아 래 -</p>
-          <div class="doc-body">${escapeHtml(doc.content || '')}</div>
-        </div>
-      </div>
-      <div class="doc-sidebar">
-        <div class="sidebar-card">
-          <div class="sidebar-tab">
-            <div class="tab active">결재선</div>
-            <div class="tab">문서정보</div>
-          </div>
-          ${doc.approvalLine.map((a,i) => {
-            const u = USERS.find(x => x.id === a.userId);
-            const isCurrent = a.status === 'pending' && isPreviousApproved(doc, a.userId) && status === 'pending';
-            let statusLabel = '', statusCls = '';
-            if (a.status === 'approved') { statusLabel = '결재 승인'; statusCls = 'done'; }
-            else if (a.status === 'rejected') { statusLabel = '반려'; statusCls = 'rejected'; }
-            else if (isCurrent) { statusLabel = '결재 대기'; statusCls = 'waiting'; }
-            else { statusLabel = '대기'; statusCls = ''; }
-            return `
-              <div class="approval-line-item ${isCurrent ? 'current' : ''}">
-                <div class="approval-avatar" style="background:${u ? u.color : '#999'}">${u ? u.name[0] : '?'}</div>
-                <div class="approval-line-info">
-                  <div class="name">${u ? u.name : ''} ${u ? u.role : ''}</div>
-                  <div class="dept">${u ? u.dept : ''}</div>
-                  ${a.actionAt ? `<div class="time">${formatFullDateTime(a.actionAt)}</div>` : ''}
-                  ${a.comment ? `<div class="time" style="color:#c62828;">사유: ${a.comment}</div>` : ''}
-                </div>
-                ${statusLabel ? `<span class="approval-line-status ${statusCls}">${statusLabel}</span>` : ''}
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderRejectModal() {
-  return `
-    <div class="modal-overlay" onclick="rejectModal=false;render()">
-      <div class="modal" onclick="event.stopPropagation()">
-        <h3>반려 사유 입력</h3>
-        <textarea id="reject-reason" placeholder="반려 사유를 입력하세요"></textarea>
-        <div class="modal-actions">
-          <button class="btn" onclick="rejectModal=false;render()">취소</button>
-          <button class="btn danger" onclick="rejectDoc('${currentDocId}')">반려</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// ===== ACTIONS =====
-function login(uid) {
-  currentUser = USERS.find(u => u.id === uid);
-  saveUser(currentUser);
-  currentView = 'pending';
-  render();
-}
-
-function logout() {
-  currentUser = null;
-  sessionStorage.removeItem('ea_user');
-  render();
-}
-
-function goView(view) {
-  currentView = view;
-  render();
-}
-
-function goCreate() {
-  currentView = 'create';
-  render();
-}
-
-function viewDoc(id) {
-  currentDocId = id;
-  currentView = 'view';
-  render();
-}
-
-function getApproverSelections() {
-  const selects = document.querySelectorAll('.approver-select');
-  const approvers = [];
-  selects.forEach(s => { if (s.value) approvers.push(s.value); });
-  return approvers;
-}
-
-function submitDoc() {
-  const title = document.getElementById('doc-title').value.trim();
-  const content = document.getElementById('doc-content').value.trim();
-  const execDate = document.getElementById('doc-exec-date').value;
-  const coopDept = document.getElementById('doc-coop-dept').value.trim();
-  const agreement = document.getElementById('doc-agreement').value.trim();
-  const approvers = getApproverSelections();
-
-  if (!title) { alert('제목을 입력하세요.'); return; }
-  if (approvers.length === 0) { alert('결재자를 1명 이상 선택하세요.'); return; }
-
-  const doc = {
-    id: 'doc_' + Date.now(),
-    title, content, execDate, coopDept, agreement,
-    authorId: currentUser.id,
-    status: 'submitted',
-    docNumber: null,
-    createdAt: new Date().toISOString(),
-    approvalLine: approvers.map(uid => ({
-      userId: uid,
-      status: 'pending',
-      actionAt: null,
-      comment: ''
-    }))
-  };
-
-  docs.unshift(doc);
-  saveDocs(docs);
-  currentView = 'mydrafts';
-  render();
-}
-
-function saveDraft() {
-  const title = document.getElementById('doc-title').value.trim() || '(제목 없음)';
-  const content = document.getElementById('doc-content').value.trim();
-  const execDate = document.getElementById('doc-exec-date').value;
-  const coopDept = document.getElementById('doc-coop-dept').value.trim();
-  const agreement = document.getElementById('doc-agreement').value.trim();
-  const approvers = getApproverSelections();
-
-  const doc = {
-    id: 'doc_' + Date.now(),
-    title, content, execDate, coopDept, agreement,
-    authorId: currentUser.id,
-    status: 'draft',
-    docNumber: null,
-    createdAt: new Date().toISOString(),
-    approvalLine: approvers.map(uid => ({
-      userId: uid,
-      status: 'pending',
-      actionAt: null,
-      comment: ''
-    }))
-  };
-
-  docs.unshift(doc);
-  saveDocs(docs);
-  currentView = 'drafts';
-  render();
-}
-
-function resubmitDoc(docId) {
-  const doc = docs.find(d => d.id === docId);
-  if (!doc) return;
-  doc.status = 'submitted';
-  doc.approvalLine.forEach(a => { a.status = 'pending'; a.actionAt = null; a.comment = ''; });
-  saveDocs(docs);
-  render();
-}
-
-function cancelDoc(docId) {
-  if (!confirm('결재를 회수하시겠습니까?')) return;
-  const doc = docs.find(d => d.id === docId);
-  if (!doc) return;
-  doc.status = 'draft';
-  doc.approvalLine.forEach(a => { a.status = 'pending'; a.actionAt = null; a.comment = ''; });
-  saveDocs(docs);
-  render();
-}
-
-function approveDoc(docId) {
-  const doc = docs.find(d => d.id === docId);
-  if (!doc) return;
-  const line = doc.approvalLine.find(a => a.userId === currentUser.id && a.status === 'pending');
-  if (!line) return;
-  line.status = 'approved';
-  line.actionAt = new Date().toISOString();
-
-  // Check if all approved → assign doc number
-  if (doc.approvalLine.every(a => a.status === 'approved')) {
-    doc.status = 'approved';
-    doc.docNumber = generateDocNumber();
+function renderDynamicFields(dtId){
+  const dt=getDocTypes().find(t=>t.id===dtId);
+  if(!dt)return '';
+  let h='';
+  const f=dt.fields||[];
+  if(f.includes('execDate')||f.includes('coopDept')){
+    h+=`<div class="form-row">`;
+    if(f.includes('execDate')) h+=`<div class="form-group"><label>시행일자</label><input type="date" id="doc-execDate"></div>`;
+    if(f.includes('coopDept')) h+=`<div class="form-group"><label>협조부서</label><input id="doc-coopDept" placeholder="협조부서"></div>`;
+    h+=`</div>`;
   }
-
-  saveDocs(docs);
-  render();
+  if(f.includes('agreement')) h+=`<div class="form-group"><label>합의</label><input id="doc-agreement" placeholder="합의 내용"></div>`;
+  if(dt.isVacation){
+    h+=`<div class="vacation-fields"><h4>&#127796; 휴가 정보</h4>
+      <div class="form-row"><div class="form-group"><label>휴가 종류</label><select id="doc-vacType"><option>연차</option><option>반차(오전)</option><option>반차(오후)</option><option>병가</option><option>경조사</option><option>기타</option></select></div></div>
+      <div class="form-row"><div class="form-group"><label>시작일</label><input type="date" id="doc-vacStart"></div><div class="form-group"><label>종료일</label><input type="date" id="doc-vacEnd"></div></div>
+      <div class="form-group"><label>사유</label><textarea id="doc-vacReason" style="min-height:80px;" placeholder="휴가 사유를 입력하세요"></textarea></div>
+    </div>`;
+  }
+  if(f.includes('expenseAmount')||f.includes('expensePurpose')){
+    h+=`<div class="form-row">`;
+    if(f.includes('expenseAmount')) h+=`<div class="form-group"><label>금액 (원)</label><input type="number" id="doc-expenseAmount" placeholder="0"></div>`;
+    if(f.includes('expensePurpose')) h+=`<div class="form-group"><label>지출목적</label><input id="doc-expensePurpose" placeholder="지출 목적"></div>`;
+    h+=`</div>`;
+  }
+  if(f.includes('tripDest')||f.includes('tripStart')||f.includes('tripEnd')){
+    h+=`<div class="form-row">`;
+    if(f.includes('tripDest')) h+=`<div class="form-group"><label>출장지</label><input id="doc-tripDest" placeholder="출장지"></div>`;
+    h+=`</div><div class="form-row">`;
+    if(f.includes('tripStart')) h+=`<div class="form-group"><label>출장 시작일</label><input type="date" id="doc-tripStart"></div>`;
+    if(f.includes('tripEnd')) h+=`<div class="form-group"><label>출장 종료일</label><input type="date" id="doc-tripEnd"></div>`;
+    h+=`</div>`;
+    if(f.includes('tripPurpose')) h+=`<div class="form-group"><label>출장 목적</label><textarea id="doc-tripPurpose" style="min-height:80px;" placeholder="출장 목적"></textarea></div>`;
+  }
+  if(f.includes('content')) h+=`<div class="form-group"><label>내용</label><textarea id="doc-content" placeholder="문서 내용을 입력하세요"></textarea></div>`;
+  return h;
 }
 
-function rejectDoc(docId) {
-  const doc = docs.find(d => d.id === docId);
-  if (!doc) return;
-  const reason = document.getElementById('reject-reason').value.trim();
-  const line = doc.approvalLine.find(a => a.userId === currentUser.id && a.status === 'pending');
-  if (!line) return;
-  line.status = 'rejected';
-  line.actionAt = new Date().toISOString();
-  line.comment = reason;
-  doc.status = 'rejected';
-  saveDocs(docs);
-  rejectModal = false;
-  render();
+// ---- DOC VIEW ----
+function renderDocView(){
+  const docs2=getDocs();
+  const doc=docs2.find(d=>d.id===S.docId);
+  if(!doc) return `<div class="empty-state"><p>문서를 찾을 수 없습니다.</p></div>`;
+  const author=getUser(doc.authorId);
+  const st=docStatus(doc);
+  const isMyTurn=doc.approvalLine.some(a=>a.userId===S.user.id&&a.status==='pending'&&prevApproved(doc,S.user.id))&&st==='pending';
+  const isAuthor=doc.authorId===S.user.id;
+  const dt=getDocTypes().find(t=>t.id===doc.docTypeId);
+  const dtName=dt?dt.name:'업무기안';
+
+  let detailRows='';
+  if(doc.execDate) detailRows+=`<tr><th>시행일자</th><td>${esc(doc.execDate)}</td><th>협조부서</th><td>${esc(doc.coopDept||'')}</td></tr>`;
+  if(doc.agreement) detailRows+=`<tr><th>합의</th><td colspan="3">${esc(doc.agreement)}</td></tr>`;
+  if(dt&&dt.isVacation){
+    detailRows+=`<tr><th>휴가종류</th><td>${esc(doc.vacType||'')}</td><th>기간</th><td>${esc(doc.vacStart||'')} ~ ${esc(doc.vacEnd||'')}</td></tr>`;
+    if(doc.vacReason) detailRows+=`<tr><th>사유</th><td colspan="3">${esc(doc.vacReason)}</td></tr>`;
+  }
+  if(doc.expenseAmount) detailRows+=`<tr><th>금액</th><td>${Number(doc.expenseAmount).toLocaleString()}원</td><th>목적</th><td>${esc(doc.expensePurpose||'')}</td></tr>`;
+  if(doc.tripDest) detailRows+=`<tr><th>출장지</th><td>${esc(doc.tripDest)}</td><th>기간</th><td>${esc(doc.tripStart||'')} ~ ${esc(doc.tripEnd||'')}</td></tr>`;
+  if(doc.tripPurpose) detailRows+=`<tr><th>출장목적</th><td colspan="3">${esc(doc.tripPurpose)}</td></tr>`;
+  detailRows+=`<tr><th>제목</th><td colspan="3">${esc(doc.title)}</td></tr>`;
+
+  return `<div class="doc-container"><div class="doc-main">
+    <div class="doc-toolbar">
+      ${isMyTurn?`<button class="btn success" onclick="approveDoc('${doc.id}')">&#10003; 승인</button><button class="btn danger" onclick="S.modal='reject';R();">&#10005; 반려</button>`:''}
+      ${isAuthor&&st==='draft'?`<button class="btn primary" onclick="resubmitDoc('${doc.id}')">&#9993; 결재 상신</button>`:''}
+      ${isAuthor&&st==='pending'?`<button class="btn danger" onclick="cancelDoc('${doc.id}')">&#128281; 결재 회수</button>`:''}
+      <button class="btn" onclick="S.view='pending';R();">&#8592; 목록</button>
+    </div>
+    <div class="doc-paper">
+      <h1>${dtName.split('').join(' ')}</h1>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+        <table class="doc-meta-table">
+          <tr><th>기안자</th><td>${esc(author?author.name:'')}</td></tr>
+          <tr><th>소속</th><td>${esc(author?author.dept:'')}</td></tr>
+          <tr><th>기안일</th><td>${fmtDateTime(doc.createdAt)}</td></tr>
+          <tr><th>문서번호</th><td>${doc.docNumber||'<span style="color:#999">미부여</span>'}</td></tr>
+        </table>
+        <table class="approval-table">
+          <tr><th rowspan="2" style="writing-mode:vertical-lr;letter-spacing:4px;">신<br>청</th>
+            ${doc.approvalLine.map(a=>{const u2=getUser(a.userId);return `<th>${esc(u2?u2.role:'')}</th>`;}).join('')}
+          </tr><tr>
+            ${doc.approvalLine.map(a=>{const u2=getUser(a.userId);
+              if(a.status==='approved') return `<td class="stamp-cell"><div class="stamp"><div class="stamp-circle">승인</div><div class="stamp-name">${esc(u2?u2.name:'')}</div><div class="stamp-date">${fmtDate(a.actionAt)}</div></div></td>`;
+              if(a.status==='rejected') return `<td class="stamp-cell"><div class="stamp"><div class="stamp-circle rejected">반려</div><div class="stamp-name">${esc(u2?u2.name:'')}</div><div class="stamp-date">${fmtDate(a.actionAt)}</div></div></td>`;
+              return `<td class="stamp-cell"><span class="stamp-pending">${esc(u2?u2.name:'')}</span></td>`;
+            }).join('')}
+          </tr>
+        </table>
+      </div>
+      <table class="doc-detail-table">${detailRows}</table>
+      ${doc.content?`<p class="doc-body-label">- 아 래 -</p><div class="doc-body">${esc(doc.content)}</div>`:''}
+    </div>
+  </div>
+  <div class="doc-sidebar">
+    <div class="sidebar-card"><div class="sidebar-card-header"><h4>결재선</h4></div>
+      ${doc.approvalLine.map(a=>{const u2=getUser(a.userId);const cur=a.status==='pending'&&prevApproved(doc,a.userId)&&st==='pending';
+        let sl='',sc='';
+        if(a.status==='approved'){sl='결재 승인';sc='done';}else if(a.status==='rejected'){sl='반려';sc='rejected';}else if(cur){sl='결재 대기';sc='waiting';}else{sl='대기';sc='';}
+        return `<div class="approval-line-item ${cur?'current':''}">
+          <div class="approval-avatar" style="background:${u2?u2.color:'#999'}">${u2?u2.name[0]:'?'}</div>
+          <div class="approval-line-info"><div class="name">${esc(u2?u2.name:'')} ${esc(u2?u2.role:'')}</div><div class="dept">${esc(u2?u2.dept:'')}</div>
+            ${a.actionAt?`<div class="time">${fmtFull(a.actionAt)}</div>`:''}
+            ${a.comment?`<div class="time" style="color:#c62828;">사유: ${esc(a.comment)}</div>`:''}
+          </div>${sl?`<span class="als ${sc}">${sl}</span>`:''}</div>`;
+      }).join('')}
+    </div>
+  </div></div>`;
 }
 
-function addApproverSlot() {
-  const container = document.getElementById('approver-slots');
-  const idx = container.children.length;
-  const higherUsers = USERS.filter(u => u.id !== currentUser.id);
-  const div = document.createElement('div');
-  div.className = 'approver-slot';
-  div.dataset.idx = idx;
-  div.innerHTML = `
-    <span class="slot-label">${idx+1}차 결재</span>
-    <select class="approver-select">
-      <option value="">선택</option>
-      ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
-    </select>
-    <button class="remove-approver" onclick="this.parentElement.remove()">&#10005;</button>
-  `;
-  container.appendChild(div);
+// ---- SETTINGS ----
+function renderSettings(){
+  const tabs=[{id:'profile',label:'내 정보'},{id:'users',label:'사용자 관리'},{id:'doctypes',label:'문서 종류'},{id:'docnum',label:'문서번호 형식'},{id:'company',label:'회사 설정'}];
+  return `<div class="settings-page">
+    <div class="tab-bar">${tabs.map(t=>`<div class="tab-btn ${S.settingsTab===t.id?'active':''}" onclick="S.settingsTab='${t.id}';R();">${t.label}</div>`).join('')}</div>
+    ${renderSettingsTab()}
+  </div>`;
 }
 
-function removeApproverSlot(idx) {
-  const container = document.getElementById('approver-slots');
-  if (container.children.length <= 1) { alert('최소 1명의 결재자가 필요합니다.'); return; }
-  container.children[idx].remove();
-  // Re-index
-  Array.from(container.children).forEach((el, i) => {
-    el.querySelector('.slot-label').textContent = `${i+1}차 결재`;
+function renderSettingsTab(){
+  switch(S.settingsTab){
+    case 'profile': return renderProfileSettings();
+    case 'users': return renderUsersSettings();
+    case 'doctypes': return renderDocTypeSettings();
+    case 'docnum': return renderDocNumSettings();
+    case 'company': return renderCompanySettings();
+    default: return '';
+  }
+}
+
+function renderProfileSettings(){
+  const u=S.user;
+  const depts=[...new Set(getUsers().map(x=>x.dept))];
+  return `<div class="settings-section"><h3>내 정보 수정</h3>
+    <div class="setting-row"><label>이름</label><input id="s-name" value="${esc(u.name)}"></div>
+    <div class="setting-row"><label>직급</label><select id="s-role">${['사원','대리','과장','부장','부사장','대표이사'].map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="setting-row"><label>부서</label><input id="s-dept" value="${esc(u.dept)}" list="s-dept-list"><datalist id="s-dept-list">${depts.map(d=>`<option value="${esc(d)}">`).join('')}</datalist></div>
+    <div class="setting-row"><label>비밀번호</label><input type="password" id="s-pw" placeholder="변경할 비밀번호 (미입력 시 유지)"></div>
+    <div class="setting-row"><label>테마 색상</label><div style="display:flex;gap:6px;">${COLORS.map(c=>`<div style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c===u.color?'#333':'transparent'}" onclick="updateMyColor('${c}')"></div>`).join('')}</div></div>
+    <div style="margin-top:16px;"><button class="btn primary" onclick="saveProfile()">저장</button></div>
+  </div>`;
+}
+
+function renderUsersSettings(){
+  const users=getUsers();
+  return `<div class="settings-section"><h3>사용자 관리</h3>
+    ${users.map(u=>`<div class="user-list-item">
+      <div class="user-avatar" style="background:${u.color};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;">${u.name[0]}</div>
+      <div class="uinfo"><div class="uname">${esc(u.name)}</div><div class="urole">${esc(u.role)} | ${esc(u.dept)}</div></div>
+      <button class="btn" style="font-size:12px;padding:4px 10px;" onclick="editUser('${u.id}')">수정</button>
+      ${u.id!==S.user.id?`<button class="btn danger" style="font-size:12px;padding:4px 10px;" onclick="deleteUser('${u.id}')">삭제</button>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderDocTypeSettings(){
+  const types=getDocTypes();
+  return `<div class="settings-section"><h3>문서 종류 관리</h3>
+    ${types.map(t=>`<div class="user-list-item">
+      <div class="uinfo"><div class="uname">${esc(t.name)}</div><div class="urole">${t.isVacation?'&#127796; 휴가 문서':'&#128196; 일반 문서'} | 필드: ${t.fields.length}개</div></div>
+      <button class="btn" style="font-size:12px;padding:4px 10px;" onclick="editDocType('${t.id}')">수정</button>
+      <button class="btn danger" style="font-size:12px;padding:4px 10px;" onclick="deleteDocType('${t.id}')">삭제</button>
+    </div>`).join('')}
+    <button class="btn primary" style="margin-top:12px;" onclick="addDocType()">+ 문서 종류 추가</button>
+  </div>`;
+}
+
+function renderDocNumSettings(){
+  const s=getSettings();
+  return `<div class="settings-section"><h3>문서번호 형식 설정</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:16px;">사용 가능한 변수: <code>{YYYY}</code> 연도, <code>{NUM:자릿수}</code> 일련번호 (예: {NUM:4} → 0001)</p>
+    <div class="setting-row"><label>형식</label><input id="s-docfmt" value="${esc(s.docNumFormat)}"></div>
+    <div style="margin:12px 0;padding:12px;background:#f8f9fa;border-radius:6px;">
+      <span style="font-size:12px;color:#888;">미리보기: </span>
+      <span id="docfmt-preview" style="font-weight:600;">${previewDocNum(s.docNumFormat)}</span>
+    </div>
+    <div class="setting-row"><label>현재 번호</label><input type="number" id="s-doccnt" value="${s.docCounter||0}" min="0"></div>
+    <button class="btn primary" style="margin-top:12px;" onclick="saveDocNum()">저장</button>
+  </div>`;
+}
+
+function previewDocNum(fmt){
+  let r=fmt.replace('{YYYY}',new Date().getFullYear());
+  r=r.replace(/\{NUM:(\d+)\}/,(m,n)=>String(42).padStart(parseInt(n),'0'));
+  return r;
+}
+
+function renderCompanySettings(){
+  const s=getSettings();
+  return `<div class="settings-section"><h3>회사 설정</h3>
+    <div class="setting-row"><label>회사명</label><input id="s-company" value="${esc(s.companyName)}"></div>
+    <button class="btn primary" style="margin-top:12px;" onclick="saveCompany()">저장</button>
+  </div>
+  <div class="settings-section"><h3>데이터 관리</h3>
+    <button class="btn danger" onclick="if(confirm('모든 데이터를 초기화하시겠습니까?')){localStorage.clear();sessionStorage.clear();location.reload();}">전체 초기화</button>
+  </div>`;
+}
+
+// ---- CALENDAR ----
+function renderCalendar(){
+  const y=S.calYear,m=S.calMonth;
+  const first=new Date(y,m,1);
+  const last=new Date(y,m+1,0);
+  const startDay=first.getDay();
+  const totalDays=last.getDate();
+  const today=new Date();const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  // Get vacation events from approved vacation docs
+  const docs2=getDocs();
+  const vacEvents=[];
+  docs2.forEach(d=>{
+    if(docStatus(d)!=='approved')return;
+    const dt=getDocTypes().find(t=>t.id===d.docTypeId);
+    if(!dt||!dt.isVacation)return;
+    if(!d.vacStart||!d.vacEnd)return;
+    const author=getUser(d.authorId);
+    vacEvents.push({type:'vacation',title:`${author?author.name:'?'} ${d.vacType||'휴가'}`,start:d.vacStart,end:d.vacEnd,authorName:author?author.name:'',vacType:d.vacType||'휴가'});
   });
+  const calEvents=getEvents();
+
+  let cells='';
+  // Previous month fill
+  const prevLast=new Date(y,m,0).getDate();
+  for(let i=startDay-1;i>=0;i--){
+    const day=prevLast-i;
+    cells+=`<div class="cal-cell other-month"><div class="day-num">${day}</div></div>`;
+  }
+  // Current month
+  for(let d=1;d<=totalDays;d++){
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=dateStr===todayStr;
+    // Find events for this day
+    let evHtml='';
+    vacEvents.forEach(ev=>{
+      if(dateStr>=ev.start&&dateStr<=ev.end){
+        const endLabel=dateStr===ev.start?` ~${ev.end.slice(5)}`:'';
+        evHtml+=`<div class="cal-event vacation" title="${esc(ev.title)}${endLabel}">${esc(ev.title)}${endLabel}</div>`;
+      }
+    });
+    calEvents.forEach(ev=>{
+      if(dateStr>=ev.start&&dateStr<=ev.end){
+        evHtml+=`<div class="cal-event event" title="${esc(ev.title)}" onclick="event.stopPropagation();viewEvent('${ev.id}')">${esc(ev.title)}</div>`;
+      }
+    });
+    cells+=`<div class="cal-cell ${isToday?'today':''}" onclick="openEventModal('${dateStr}')"><div class="day-num">${d}</div>${evHtml}</div>`;
+  }
+  // Next month fill
+  const remain=7-((startDay+totalDays)%7);
+  if(remain<7) for(let i=1;i<=remain;i++) cells+=`<div class="cal-cell other-month"><div class="day-num">${i}</div></div>`;
+
+  const monthNames=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  return `<div class="calendar-wrap">
+    <div class="cal-header">
+      <h3>&#128197; 캘린더</h3>
+      <div class="cal-nav">
+        <button onclick="calNav(-1)">&#9664;</button>
+        <span>${y}년 ${monthNames[m]}</span>
+        <button onclick="calNav(1)">&#9654;</button>
+        <button onclick="S.calYear=new Date().getFullYear();S.calMonth=new Date().getMonth();R();">오늘</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;font-size:12px;">
+      <span><span class="cal-event vacation" style="display:inline-block;">&#127796;</span> 휴가</span>
+      <span><span class="cal-event event" style="display:inline-block;">&#128197;</span> 행사</span>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-day-header">일</div><div class="cal-day-header">월</div><div class="cal-day-header">화</div><div class="cal-day-header">수</div><div class="cal-day-header">목</div><div class="cal-day-header">금</div><div class="cal-day-header">토</div>
+      ${cells}
+    </div>
+  </div>`;
 }
 
-function printDoc() { window.print(); }
-
-// ===== HELPERS =====
-function formatDate(iso) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+// ---- MODAL ----
+function renderModal(){
+  if(S.modal==='reject'){
+    return `<div class="modal-overlay" onclick="S.modal=null;R();"><div class="modal" onclick="event.stopPropagation()">
+      <h3>반려 사유 입력</h3>
+      <textarea id="reject-reason" placeholder="반려 사유를 입력하세요"></textarea>
+      <div class="modal-actions"><button class="btn" onclick="S.modal=null;R();">취소</button><button class="btn danger" onclick="rejectDoc('${S.docId}')">반려</button></div>
+    </div></div>`;
+  }
+  if(S.modal==='event'){
+    const ev=S.editEventId?getEvents().find(e=>e.id===S.editEventId):null;
+    return `<div class="modal-overlay" onclick="S.modal=null;S.editEventId=null;R();"><div class="modal" onclick="event.stopPropagation()">
+      <h3>${ev?'행사 수정':'새 행사 등록'}</h3>
+      <div class="form-group"><label>행사명</label><input id="ev-title" value="${esc(ev?ev.title:'')}"></div>
+      <div class="form-row"><div class="form-group"><label>시작일</label><input type="date" id="ev-start" value="${ev?ev.start:(S.calSelectedDate||'')}"></div>
+      <div class="form-group"><label>종료일</label><input type="date" id="ev-end" value="${ev?ev.end:(S.calSelectedDate||'')}"></div></div>
+      <div class="form-group"><label>설명</label><textarea id="ev-desc" style="min-height:80px;">${esc(ev?ev.desc:'')}</textarea></div>
+      <div class="form-group"><label>참여자</label><input id="ev-people" value="${esc(ev?ev.people:'')}" placeholder="쉼표로 구분 (예: 고단비, 김상후)"></div>
+      <div class="modal-actions">
+        ${ev?`<button class="btn danger" onclick="deleteEvent('${ev.id}')" style="margin-right:auto;">삭제</button>`:''}
+        <button class="btn" onclick="S.modal=null;S.editEventId=null;R();">취소</button>
+        <button class="btn primary" onclick="saveEvent()">${ev?'수정':'등록'}</button>
+      </div>
+    </div></div>`;
+  }
+  if(S.modal==='eventView'&&S.editEventId){
+    const ev=getEvents().find(e=>e.id===S.editEventId);
+    if(!ev){S.modal=null;return '';}
+    return `<div class="modal-overlay" onclick="S.modal=null;S.editEventId=null;R();"><div class="modal" onclick="event.stopPropagation()">
+      <h3>${esc(ev.title)}</h3>
+      <p style="margin-bottom:8px;font-size:13px;">&#128197; ${ev.start}${ev.end!==ev.start?' ~ '+ev.end:''}</p>
+      ${ev.people?`<p style="margin-bottom:8px;font-size:13px;">&#128101; ${esc(ev.people)}</p>`:''}
+      ${ev.desc?`<p style="font-size:13px;white-space:pre-wrap;">${esc(ev.desc)}</p>`:''}
+      <div class="modal-actions">
+        <button class="btn" onclick="S.modal='event';R();">수정</button>
+        <button class="btn primary" onclick="S.modal=null;S.editEventId=null;R();">닫기</button>
+      </div>
+    </div></div>`;
+  }
+  if(S.modal==='editUser'){
+    const u=getUser(S.editUserId);
+    if(!u){S.modal=null;return '';}
+    return `<div class="modal-overlay" onclick="S.modal=null;R();"><div class="modal" onclick="event.stopPropagation()">
+      <h3>사용자 수정: ${esc(u.name)}</h3>
+      <div class="form-group"><label>이름</label><input id="eu-name" value="${esc(u.name)}"></div>
+      <div class="form-group"><label>직급</label><select id="eu-role">${['사원','대리','과장','부장','부사장','대표이사'].map(r=>`<option ${r===u.role?'selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="form-group"><label>부서</label><input id="eu-dept" value="${esc(u.dept)}"></div>
+      <div class="form-group"><label>비밀번호 재설정</label><input type="password" id="eu-pw" placeholder="미입력 시 유지"></div>
+      <div class="modal-actions"><button class="btn" onclick="S.modal=null;R();">취소</button><button class="btn primary" onclick="saveEditUser('${u.id}')">저장</button></div>
+    </div></div>`;
+  }
+  if(S.modal==='editDocType'){
+    const dt=S.editDtId?getDocTypes().find(t=>t.id===S.editDtId):null;
+    const allFields=[
+      {k:'title',l:'제목'},{k:'execDate',l:'시행일자'},{k:'coopDept',l:'협조부서'},{k:'agreement',l:'합의'},{k:'content',l:'내용'},
+      {k:'vacStart',l:'휴가시작일'},{k:'vacEnd',l:'휴가종료일'},{k:'vacType',l:'휴가종류'},{k:'vacReason',l:'휴가사유'},
+      {k:'expenseAmount',l:'금액'},{k:'expensePurpose',l:'지출목적'},
+      {k:'tripDest',l:'출장지'},{k:'tripStart',l:'출장시작일'},{k:'tripEnd',l:'출장종료일'},{k:'tripPurpose',l:'출장목적'},
+    ];
+    const curFields=dt?dt.fields:['title','content'];
+    return `<div class="modal-overlay" onclick="S.modal=null;R();"><div class="modal" onclick="event.stopPropagation()">
+      <h3>${dt?'문서 종류 수정':'새 문서 종류 추가'}</h3>
+      <div class="form-group"><label>이름</label><input id="edt-name" value="${esc(dt?dt.name:'')}"></div>
+      <div class="form-group"><label style="margin-bottom:8px;">포함 필드</label>
+        ${allFields.map(f=>`<label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:normal;margin-bottom:4px;"><input type="checkbox" class="edt-field" value="${f.k}" ${curFields.includes(f.k)?'checked':''}> ${f.l}</label>`).join('')}
+      </div>
+      <div class="form-group"><label style="display:flex;align-items:center;gap:6px;font-weight:normal;"><input type="checkbox" id="edt-isvac" ${dt&&dt.isVacation?'checked':''}> 휴가 문서 (결재 완료 시 캘린더에 자동 표시)</label></div>
+      <div class="modal-actions"><button class="btn" onclick="S.modal=null;R();">취소</button><button class="btn primary" onclick="saveDocType()">저장</button></div>
+    </div></div>`;
+  }
+  return '';
 }
 
-function formatDateTime(iso) {
-  const d = new Date(iso);
-  const days = ['일','월','화','수','목','금','토'];
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}(${days[d.getDay()]})`;
+// ============ ACTIONS ============
+function doLogin(){
+  const u=getUser(S.loginUserId);
+  const pw=document.getElementById('pw-input').value;
+  if(pw!==u.pw){document.getElementById('login-error').textContent='비밀번호가 올바르지 않습니다.';return;}
+  S.user=u;setCurUser(u);S.view='pending';S.loginMode='select';R();
+}
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const role=document.getElementById('reg-role').value;
+  const dept=document.getElementById('reg-dept').value.trim();
+  const pw=document.getElementById('reg-pw').value;
+  const pw2=document.getElementById('reg-pw2').value;
+  const err=document.getElementById('reg-error');
+  if(!name){err.textContent='이름을 입력하세요.';return;}
+  if(!dept){err.textContent='부서를 입력하세요.';return;}
+  if(!pw){err.textContent='비밀번호를 입력하세요.';return;}
+  if(pw!==pw2){err.textContent='비밀번호가 일치하지 않습니다.';return;}
+  const users=getUsers();
+  const newU={id:'u'+Date.now(),name,role,dept,color:COLORS[users.length%COLORS.length],pw};
+  users.push(newU);setUsers(users);
+  S.user=newU;setCurUser(newU);S.view='pending';S.loginMode='select';R();
+}
+function logout(){S.user=null;sessionStorage.removeItem('ea_user');S.loginMode='select';R();}
+
+function onDocTypeChange(){
+  const sel=document.getElementById('doc-type').value;
+  const dt=getDocTypes().find(t=>t.id===sel);
+  document.getElementById('dynamic-fields').innerHTML=renderDynamicFields(sel);
+  document.getElementById('doc-type-title').textContent=dt?dt.name:'문서';
 }
 
-function formatFullDateTime(iso) {
-  const d = new Date(iso);
-  return `${formatDate(iso)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+function getApprovers(){
+  const sels=document.querySelectorAll('.approver-select');
+  const r=[];sels.forEach(s=>{if(s.value)r.push(s.value);});return r;
 }
 
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function collectDocFields(){
+  const dtId=document.getElementById('doc-type').value;
+  const dt=getDocTypes().find(t=>t.id===dtId);
+  const data={docTypeId:dtId,title:document.getElementById('doc-title').value.trim()};
+  const ids=['execDate','coopDept','agreement','content','vacStart','vacEnd','vacType','vacReason','expenseAmount','expensePurpose','tripDest','tripStart','tripEnd','tripPurpose'];
+  ids.forEach(id=>{const el=document.getElementById('doc-'+id);if(el)data[id]=el.value;});
+  return data;
 }
 
-// ===== INIT with sample data =====
-function initSampleData() {
-  if (localStorage.getItem('ea_initialized')) return;
-  const sampleDocs = [
-    {
-      id: 'doc_sample1',
-      title: '2020년 4분기 영업전략 보고',
-      content: '1. 목적\n  4분기 영업목표 달성을 위한 전략 수립 및 실행 계획 보고\n\n2. 현황\n  - 3분기 매출 목표 대비 95% 달성\n  - 신규 거래처 15개 확보\n  - 기존 거래처 이탈률 3% 이하 유지\n\n3. 4분기 전략\n  가. 주요 거래처 집중 관리\n  나. 신규 시장 개척 (동남아 지역)\n  다. 온라인 채널 확대\n\n4. 예상 효과\n  - 매출 전년 대비 15% 성장 예상\n  - 신규 거래처 20개 추가 목표',
-      execDate: '2020-11-30',
-      coopDept: '기획부',
-      agreement: '',
-      authorId: 'u1',
-      status: 'approved',
-      docNumber: 'DOC-2020-0001',
-      createdAt: '2020-11-27T09:10:00.000Z',
-      approvalLine: [
-        { userId:'u2', status:'approved', actionAt:'2020-11-27T09:30:00.000Z', comment:'' },
-        { userId:'u3', status:'approved', actionAt:'2020-11-27T10:15:00.000Z', comment:'' },
-      ]
-    },
-    {
-      id: 'doc_sample2',
-      title: '신규 프로젝트 인력 충원 요청',
-      content: '1. 요청 사항\n  신규 프로젝트 수행을 위한 개발 인력 2명 충원 요청\n\n2. 사유\n  - AI 기반 고객 분석 시스템 개발 프로젝트 수주\n  - 현재 가용 개발 인력 부족\n  - 프로젝트 착수 예정일: 2020-12-15\n\n3. 요청 인원\n  - 백엔드 개발자 1명 (경력 3년 이상)\n  - 프론트엔드 개발자 1명 (경력 2년 이상)',
-      execDate: '2020-12-01',
-      coopDept: '인사부',
-      agreement: '인사부 합의 필요',
-      authorId: 'u4',
-      status: 'submitted',
-      docNumber: null,
-      createdAt: '2020-11-28T11:00:00.000Z',
-      approvalLine: [
-        { userId:'u5', status:'approved', actionAt:'2020-11-28T14:00:00.000Z', comment:'' },
-        { userId:'u2', status:'pending', actionAt:null, comment:'' },
-      ]
-    },
+function submitDoc(){
+  const data=collectDocFields();
+  if(!data.title){alert('제목을 입력하세요.');return;}
+  const approvers=getApprovers();
+  if(!approvers.length){alert('결재자를 1명 이상 선택하세요.');return;}
+  const doc={id:'doc_'+Date.now(),...data,authorId:S.user.id,status:'submitted',docNumber:null,createdAt:new Date().toISOString(),
+    approvalLine:approvers.map(uid=>({userId:uid,status:'pending',actionAt:null,comment:''}))};
+  const docs2=getDocs();docs2.unshift(doc);setDocs(docs2);
+  S.view='mydrafts';R();
+}
+
+function saveDraft(){
+  const data=collectDocFields();
+  data.title=data.title||'(제목 없음)';
+  const approvers=getApprovers();
+  const doc={id:'doc_'+Date.now(),...data,authorId:S.user.id,status:'draft',docNumber:null,createdAt:new Date().toISOString(),
+    approvalLine:approvers.map(uid=>({userId:uid,status:'pending',actionAt:null,comment:''}))};
+  const docs2=getDocs();docs2.unshift(doc);setDocs(docs2);
+  S.view='drafts';R();
+}
+
+function resubmitDoc(id){const docs2=getDocs();const d=docs2.find(x=>x.id===id);if(!d)return;d.status='submitted';d.approvalLine.forEach(a=>{a.status='pending';a.actionAt=null;a.comment='';});setDocs(docs2);R();}
+function cancelDoc(id){if(!confirm('결재를 회수하시겠습니까?'))return;const docs2=getDocs();const d=docs2.find(x=>x.id===id);if(!d)return;d.status='draft';d.approvalLine.forEach(a=>{a.status='pending';a.actionAt=null;a.comment='';});setDocs(docs2);R();}
+
+function approveDoc(id){
+  const docs2=getDocs();const d=docs2.find(x=>x.id===id);if(!d)return;
+  const line=d.approvalLine.find(a=>a.userId===S.user.id&&a.status==='pending');if(!line)return;
+  line.status='approved';line.actionAt=new Date().toISOString();
+  if(d.approvalLine.every(a=>a.status==='approved')){d.status='approved';d.docNumber=genDocNum();}
+  setDocs(docs2);R();
+}
+
+function rejectDoc(id){
+  const docs2=getDocs();const d=docs2.find(x=>x.id===id);if(!d)return;
+  const reason=document.getElementById('reject-reason').value.trim();
+  const line=d.approvalLine.find(a=>a.userId===S.user.id&&a.status==='pending');if(!line)return;
+  line.status='rejected';line.actionAt=new Date().toISOString();line.comment=reason;d.status='rejected';
+  setDocs(docs2);S.modal=null;R();
+}
+
+function addSlot(){
+  const c=document.getElementById('approver-slots');
+  const users=getUsers().filter(u=>u.id!==S.user.id);
+  const idx=c.children.length;
+  const div=document.createElement('div');div.className='approver-slot';
+  div.innerHTML=`<span class="sl">${idx+1}차 결재</span><select class="approver-select"><option value="">선택</option>${users.map(u=>`<option value="${u.id}">${esc(u.name)} ${esc(u.role)} (${esc(u.dept)})</option>`).join('')}</select><button class="rm-btn" onclick="rmSlot(this)">&#10005;</button>`;
+  c.appendChild(div);
+}
+function rmSlot(btn){const c=document.getElementById('approver-slots');if(c.children.length<=1){alert('최소 1명의 결재자가 필요합니다.');return;}btn.parentElement.remove();Array.from(c.children).forEach((el,i)=>{el.querySelector('.sl').textContent=`${i+1}차 결재`;});}
+
+// Settings actions
+function saveProfile(){
+  const users=getUsers();const u=users.find(x=>x.id===S.user.id);if(!u)return;
+  u.name=document.getElementById('s-name').value.trim()||u.name;
+  u.role=document.getElementById('s-role').value;
+  u.dept=document.getElementById('s-dept').value.trim()||u.dept;
+  const pw=document.getElementById('s-pw').value;if(pw)u.pw=pw;
+  setUsers(users);S.user=u;setCurUser(u);alert('저장되었습니다.');R();
+}
+function updateMyColor(c){
+  const users=getUsers();const u=users.find(x=>x.id===S.user.id);if(!u)return;
+  u.color=c;setUsers(users);S.user=u;setCurUser(u);R();
+}
+function editUser(id){S.editUserId=id;S.modal='editUser';R();}
+function saveEditUser(id){
+  const users=getUsers();const u=users.find(x=>x.id===id);if(!u)return;
+  u.name=document.getElementById('eu-name').value.trim()||u.name;
+  u.role=document.getElementById('eu-role').value;
+  u.dept=document.getElementById('eu-dept').value.trim()||u.dept;
+  const pw=document.getElementById('eu-pw').value;if(pw)u.pw=pw;
+  setUsers(users);if(id===S.user.id){S.user=u;setCurUser(u);}
+  S.modal=null;R();
+}
+function deleteUser(id){if(!confirm('이 사용자를 삭제하시겠습니까?'))return;const users=getUsers().filter(u=>u.id!==id);setUsers(users);R();}
+
+function editDocType(id){S.editDtId=id;S.modal='editDocType';R();}
+function addDocType(){S.editDtId=null;S.modal='editDocType';R();}
+function saveDocType(){
+  const name=document.getElementById('edt-name').value.trim();if(!name){alert('이름을 입력하세요.');return;}
+  const fields=Array.from(document.querySelectorAll('.edt-field:checked')).map(c=>c.value);
+  const isVac=document.getElementById('edt-isvac').checked;
+  const types=getDocTypes();
+  if(S.editDtId){
+    const t=types.find(x=>x.id===S.editDtId);if(t){t.name=name;t.fields=fields;t.isVacation=isVac;}
+  } else {
+    types.push({id:'dt_'+Date.now(),name,fields,isVacation:isVac});
+  }
+  setDocTypes(types);S.modal=null;R();
+}
+function deleteDocType(id){if(!confirm('이 문서 종류를 삭제하시겠습니까?'))return;setDocTypes(getDocTypes().filter(t=>t.id!==id));R();}
+
+function saveDocNum(){
+  const s=getSettings();
+  s.docNumFormat=document.getElementById('s-docfmt').value.trim()||'DOC-{YYYY}-{NUM:4}';
+  s.docCounter=parseInt(document.getElementById('s-doccnt').value)||0;
+  setSettings(s);alert('저장되었습니다.');R();
+}
+function saveCompany(){
+  const s=getSettings();s.companyName=document.getElementById('s-company').value.trim()||'회사명';
+  setSettings(s);alert('저장되었습니다.');R();
+}
+
+// Calendar actions
+function calNav(dir){S.calMonth+=dir;if(S.calMonth<0){S.calMonth=11;S.calYear--;}if(S.calMonth>11){S.calMonth=0;S.calYear++;}R();}
+function openEventModal(dateStr){S.calSelectedDate=dateStr;S.editEventId=null;S.modal='event';R();}
+function viewEvent(id){S.editEventId=id;S.modal='eventView';R();}
+function saveEvent(){
+  const title=document.getElementById('ev-title').value.trim();if(!title){alert('행사명을 입력하세요.');return;}
+  const start=document.getElementById('ev-start').value;const end=document.getElementById('ev-end').value||start;
+  const desc=document.getElementById('ev-desc').value;const people=document.getElementById('ev-people').value;
+  if(!start){alert('날짜를 입력하세요.');return;}
+  const events=getEvents();
+  if(S.editEventId){
+    const ev=events.find(e=>e.id===S.editEventId);if(ev){ev.title=title;ev.start=start;ev.end=end;ev.desc=desc;ev.people=people;}
+  } else {
+    events.push({id:'ev_'+Date.now(),title,start,end,desc,people,createdBy:S.user.id});
+  }
+  setEvents(events);S.modal=null;S.editEventId=null;R();
+}
+function deleteEvent(id){if(!confirm('이 행사를 삭제하시겠습니까?'))return;setEvents(getEvents().filter(e=>e.id!==id));S.modal=null;S.editEventId=null;R();}
+
+// ============ INIT ============
+function initSample(){
+  if(localStorage.getItem('ea_v2_init'))return;
+  const sampleDocs=[
+    {id:'doc_s1',docTypeId:'dt1',title:'2024년 4분기 영업전략 보고',content:'1. 목적\n  4분기 영업목표 달성을 위한 전략 수립\n\n2. 현황\n  - 3분기 매출 목표 대비 95% 달성\n  - 신규 거래처 15개 확보\n\n3. 4분기 전략\n  가. 주요 거래처 집중 관리\n  나. 신규 시장 개척\n  다. 온라인 채널 확대',
+      execDate:'2024-11-30',coopDept:'기획부',agreement:'',authorId:'u1',status:'approved',docNumber:'DOC-2024-0001',createdAt:'2024-11-27T09:10:00Z',
+      approvalLine:[{userId:'u2',status:'approved',actionAt:'2024-11-27T09:30:00Z',comment:''},{userId:'u3',status:'approved',actionAt:'2024-11-27T10:15:00Z',comment:''}]},
+    {id:'doc_s2',docTypeId:'dt2',title:'연차 휴가 신청',content:'',vacType:'연차',vacStart:'2024-12-24',vacEnd:'2024-12-26',vacReason:'연말 가족 여행',
+      authorId:'u6',status:'approved',docNumber:'DOC-2024-0002',createdAt:'2024-12-10T11:00:00Z',
+      approvalLine:[{userId:'u1',status:'approved',actionAt:'2024-12-10T14:00:00Z',comment:''},{userId:'u2',status:'approved',actionAt:'2024-12-10T15:30:00Z',comment:''}]},
+    {id:'doc_s3',docTypeId:'dt3',title:'개발장비 구매 요청',content:'AI 서버용 GPU 장비 구매',expenseAmount:'5000000',expensePurpose:'개발 장비',
+      authorId:'u5',status:'submitted',docNumber:null,createdAt:'2024-12-15T09:00:00Z',
+      approvalLine:[{userId:'u2',status:'approved',actionAt:'2024-12-15T10:00:00Z',comment:''},{userId:'u3',status:'pending',actionAt:null,comment:''}]},
   ];
-  docs = sampleDocs;
-  saveDocCounter(1);
-  saveDocs(docs);
-  localStorage.setItem('ea_initialized', '1');
+  setDocs(sampleDocs);
+  setEvents([{id:'ev_s1',title:'2024 연말 송년회',start:'2024-12-28',end:'2024-12-28',desc:'전 직원 참여 송년회',people:'전 직원',createdBy:'u1'}]);
+  const s=getSettings();s.docCounter=2;setSettings(s);
+  localStorage.setItem('ea_v2_init','1');
 }
-
-initSampleData();
-docs = loadDocs();
-render();
+initSample();R();
 </script>
 </body>
 </html>
