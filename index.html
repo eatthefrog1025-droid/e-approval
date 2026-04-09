@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전자결재 시스템</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Malgun Gothic','맑은 고딕',sans-serif; background:#f0f2f5; color:#333; font-size:14px; }
+a { text-decoration:none; color:inherit; cursor:pointer; }
+
+/* Layout */
+.app { display:flex; height:100vh; }
+.icon-sidebar { width:50px; background:#2c3e50; display:flex; flex-direction:column; align-items:center; padding-top:12px; gap:4px; flex-shrink:0; }
+.icon-sidebar .icon-btn { width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:#8899aa; border-radius:8px; cursor:pointer; font-size:18px; transition:all .2s; }
+.icon-sidebar .icon-btn:hover, .icon-sidebar .icon-btn.active { background:#3d5166; color:#fff; }
+.icon-sidebar .icon-btn .badge { position:absolute; top:-4px; right:-4px; background:#e74c3c; color:#fff; font-size:10px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; }
+
+.left-panel { width:240px; background:#fff; border-right:1px solid #ddd; overflow-y:auto; flex-shrink:0; }
+.left-panel h3 { padding:16px 20px 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+.left-panel h3 svg { width:20px; height:20px; }
+.new-doc-btn { display:block; margin:12px 16px; padding:12px; background:#2196F3; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; text-align:center; transition:background .2s; }
+.new-doc-btn:hover { background:#1976D2; }
+
+.nav-section { margin-top:8px; }
+.nav-section-title { padding:8px 20px 4px; font-size:12px; color:#888; font-weight:600; }
+.nav-item { padding:8px 20px 8px 28px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:13px; transition:background .15s; }
+.nav-item:hover { background:#f5f5f5; }
+.nav-item.active { background:#e3f2fd; color:#1976D2; font-weight:600; }
+.nav-item .count { margin-left:auto; background:#e0e0e0; color:#666; font-size:11px; padding:1px 7px; border-radius:10px; }
+.nav-item .count.alert { background:#e74c3c; color:#fff; }
+
+.main-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.top-bar { height:56px; background:#fff; border-bottom:1px solid #ddd; display:flex; align-items:center; padding:0 24px; gap:16px; }
+.top-bar h2 { font-size:16px; }
+.top-bar .breadcrumb { color:#888; font-size:13px; }
+.top-bar .spacer { flex:1; }
+.top-bar .search-box { padding:6px 12px; border:1px solid #ddd; border-radius:20px; font-size:13px; width:200px; }
+.top-bar .user-info { display:flex; align-items:center; gap:8px; font-size:13px; }
+.top-bar .user-avatar { width:32px; height:32px; border-radius:50%; background:#2196F3; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; }
+
+.content { flex:1; overflow-y:auto; padding:24px; }
+
+/* Document List */
+.doc-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.doc-list-header h3 { font-size:18px; }
+.doc-table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.doc-table th { background:#f8f9fa; padding:12px 16px; text-align:left; font-size:13px; color:#666; border-bottom:2px solid #e0e0e0; white-space:nowrap; }
+.doc-table td { padding:12px 16px; border-bottom:1px solid #f0f0f0; font-size:13px; }
+.doc-table tr:hover td { background:#f8fbff; }
+.doc-table .doc-title-link { color:#1976D2; cursor:pointer; font-weight:500; }
+.doc-table .doc-title-link:hover { text-decoration:underline; }
+
+.status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
+.status-badge.draft { background:#fff3e0; color:#e65100; }
+.status-badge.pending { background:#e3f2fd; color:#1565c0; }
+.status-badge.approved { background:#e8f5e9; color:#2e7d32; }
+.status-badge.rejected { background:#ffebee; color:#c62828; }
+
+/* Document View / Form */
+.doc-container { max-width:1200px; margin:0 auto; display:flex; gap:20px; }
+.doc-main { flex:1; background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden; }
+.doc-sidebar { width:280px; flex-shrink:0; }
+
+.doc-toolbar { display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid #e0e0e0; background:#f8f9fa; flex-wrap:wrap; }
+.doc-toolbar .btn { padding:7px 16px; border:1px solid #ddd; background:#fff; border-radius:6px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all .15s; }
+.doc-toolbar .btn:hover { background:#f0f0f0; }
+.doc-toolbar .btn.primary { background:#2196F3; color:#fff; border-color:#2196F3; }
+.doc-toolbar .btn.primary:hover { background:#1976D2; }
+.doc-toolbar .btn.danger { color:#c62828; border-color:#ef9a9a; }
+.doc-toolbar .btn.danger:hover { background:#ffebee; }
+.doc-toolbar .btn.success { background:#4caf50; color:#fff; border-color:#4caf50; }
+.doc-toolbar .btn.success:hover { background:#388e3c; }
+
+.doc-paper { padding:40px 48px; min-height:600px; }
+.doc-paper h1 { text-align:center; font-size:28px; letter-spacing:12px; margin-bottom:32px; }
+
+.doc-meta-table { width:auto; border-collapse:collapse; margin-bottom:24px; }
+.doc-meta-table th, .doc-meta-table td { border:1px solid #999; padding:8px 16px; font-size:13px; }
+.doc-meta-table th { background:#f5f5f5; font-weight:600; width:80px; text-align:center; }
+
+/* Approval Stamp Table */
+.approval-table-wrap { float:right; margin-bottom:24px; }
+.approval-table { border-collapse:collapse; }
+.approval-table th, .approval-table td { border:1px solid #999; padding:4px 8px; text-align:center; font-size:12px; }
+.approval-table th { background:#f5f5f5; font-weight:600; }
+.approval-table .stamp-cell { width:80px; height:70px; vertical-align:middle; }
+.stamp { display:inline-flex; flex-direction:column; align-items:center; }
+.stamp-circle { width:48px; height:48px; border:2px solid #c0392b; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#c0392b; font-size:13px; font-weight:700; }
+.stamp-circle.rejected { border-color:#666; color:#666; }
+.stamp-name { font-size:11px; color:#333; margin-top:2px; }
+.stamp-date { font-size:10px; color:#888; }
+.stamp-pending { color:#999; font-size:12px; }
+
+.doc-detail-table { width:100%; border-collapse:collapse; margin-bottom:20px; clear:both; }
+.doc-detail-table th, .doc-detail-table td { border:1px solid #999; padding:8px 16px; font-size:13px; }
+.doc-detail-table th { background:#f5f5f5; font-weight:600; width:100px; text-align:center; }
+
+.doc-body { margin-top:16px; padding:20px 0; min-height:200px; white-space:pre-wrap; line-height:1.8; font-size:14px; }
+.doc-body-label { text-align:center; color:#888; margin-top:16px; font-size:13px; }
+
+/* Sidebar - Approval Line */
+.sidebar-card { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:16px; overflow:hidden; }
+.sidebar-card-header { padding:12px 16px; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; gap:8px; }
+.sidebar-card-header h4 { font-size:14px; }
+.sidebar-tab { display:flex; border-bottom:1px solid #e0e0e0; }
+.sidebar-tab .tab { flex:1; text-align:center; padding:8px; font-size:12px; cursor:pointer; border-bottom:2px solid transparent; }
+.sidebar-tab .tab.active { color:#1976D2; border-bottom-color:#1976D2; font-weight:600; }
+
+.approval-line-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #f0f0f0; }
+.approval-line-item:last-child { border-bottom:none; }
+.approval-line-item.current { background:#fff8e1; }
+.approval-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; color:#fff; flex-shrink:0; }
+.approval-line-info { flex:1; }
+.approval-line-info .name { font-size:13px; font-weight:600; }
+.approval-line-info .dept { font-size:11px; color:#888; }
+.approval-line-info .time { font-size:11px; color:#aaa; }
+.approval-line-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:10px; }
+.approval-line-status.done { background:#e8f5e9; color:#2e7d32; }
+.approval-line-status.waiting { background:#fff3e0; color:#e65100; }
+.approval-line-status.rejected { background:#ffebee; color:#c62828; }
+
+/* Form */
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#555; }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit; }
+.form-group textarea { min-height:300px; resize:vertical; line-height:1.8; }
+.form-row { display:flex; gap:16px; }
+.form-row .form-group { flex:1; }
+
+.approval-line-editor { background:#fff; border:1px solid #ddd; border-radius:8px; padding:16px; margin-bottom:16px; }
+.approval-line-editor h4 { font-size:14px; margin-bottom:12px; }
+.approver-slot { display:flex; align-items:center; gap:8px; padding:8px; background:#f8f9fa; border-radius:6px; margin-bottom:8px; }
+.approver-slot select { flex:1; padding:6px 8px; border:1px solid #ddd; border-radius:4px; font-size:13px; }
+.approver-slot .slot-label { font-size:12px; color:#888; width:60px; flex-shrink:0; }
+.add-approver-btn { padding:6px 12px; border:1px dashed #bbb; background:transparent; border-radius:6px; font-size:12px; color:#888; cursor:pointer; width:100%; margin-top:4px; }
+.add-approver-btn:hover { border-color:#2196F3; color:#2196F3; }
+.remove-approver { background:none; border:none; color:#999; cursor:pointer; font-size:16px; padding:0 4px; }
+.remove-approver:hover { color:#c62828; }
+
+/* Reject Modal */
+.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.modal { background:#fff; border-radius:12px; padding:24px; width:400px; max-width:90%; }
+.modal h3 { margin-bottom:16px; }
+.modal textarea { width:100%; min-height:100px; padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; margin-bottom:16px; }
+.modal-actions { display:flex; justify-content:flex-end; gap:8px; }
+.modal-actions .btn { padding:8px 20px; border:1px solid #ddd; background:#fff; border-radius:6px; font-size:13px; cursor:pointer; }
+.modal-actions .btn.danger { background:#e74c3c; color:#fff; border-color:#e74c3c; }
+
+.empty-state { text-align:center; padding:60px 20px; color:#999; }
+.empty-state p { font-size:15px; margin-bottom:8px; }
+
+/* Login */
+.login-page { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#1a237e,#0d47a1,#01579b); }
+.login-box { background:#fff; border-radius:16px; padding:48px 40px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.login-box h2 { text-align:center; margin-bottom:8px; font-size:22px; }
+.login-box .subtitle { text-align:center; color:#888; font-size:13px; margin-bottom:32px; }
+.login-box .form-group { margin-bottom:20px; }
+.login-box .btn-login { width:100%; padding:12px; background:#1976D2; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; transition:background .2s; }
+.login-box .btn-login:hover { background:#1565c0; }
+.user-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:20px; }
+.user-card { padding:10px; border:2px solid #e0e0e0; border-radius:8px; cursor:pointer; text-align:center; transition:all .15s; }
+.user-card:hover { border-color:#1976D2; background:#e3f2fd; }
+.user-card .card-name { font-size:14px; font-weight:600; }
+.user-card .card-role { font-size:11px; color:#888; }
+
+/* Responsive */
+@media(max-width:900px) {
+  .left-panel { display:none; }
+  .doc-sidebar { display:none; }
+  .doc-paper { padding:20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ===== DATA =====
+const USERS = [
+  { id:'u1', name:'고단비', role:'대리', dept:'영업본부', color:'#2196F3' },
+  { id:'u2', name:'김상후', role:'대표이사', dept:'다우그룹', color:'#4caf50' },
+  { id:'u3', name:'구정모', role:'부사장', dept:'다우그룹', color:'#ff9800' },
+  { id:'u4', name:'이수진', role:'과장', dept:'기획부', color:'#9c27b0' },
+  { id:'u5', name:'박민호', role:'부장', dept:'개발본부', color:'#e91e63' },
+  { id:'u6', name:'정하윤', role:'사원', dept:'영업본부', color:'#00bcd4' },
+];
+
+const POSITIONS_ORDER = ['사원','대리','과장','부장','부사장','대표이사'];
+
+function getPositionRank(role) { return POSITIONS_ORDER.indexOf(role); }
+
+// LocalStorage helpers
+function loadDocs() {
+  try { return JSON.parse(localStorage.getItem('ea_docs')) || []; } catch { return []; }
+}
+function saveDocs(docs) { localStorage.setItem('ea_docs', JSON.stringify(docs)); }
+function loadUser() {
+  try { return JSON.parse(sessionStorage.getItem('ea_user')); } catch { return null; }
+}
+function saveUser(u) { sessionStorage.setItem('ea_user', JSON.stringify(u)); }
+
+// State
+let currentUser = loadUser();
+let docs = loadDocs();
+let currentView = 'pending'; // pending, received, completed, all, view, create
+let currentDocId = null;
+let rejectModal = false;
+let docCounter = loadDocCounter();
+
+function loadDocCounter() {
+  return parseInt(localStorage.getItem('ea_counter') || '0');
+}
+function saveDocCounter(n) { docCounter = n; localStorage.setItem('ea_counter', n.toString()); }
+
+function generateDocNumber() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const num = ++docCounter;
+  saveDocCounter(docCounter);
+  return `DOC-${y}-${String(num).padStart(4,'0')}`;
+}
+
+function getDocStatus(doc) {
+  if (doc.status === 'rejected') return 'rejected';
+  if (doc.status === 'draft') return 'draft';
+  const allApproved = doc.approvalLine.every(a => a.status === 'approved');
+  if (allApproved) return 'approved';
+  return 'pending';
+}
+
+function getDocStatusLabel(doc) {
+  const s = getDocStatus(doc);
+  return { draft:'임시저장', pending:'결재 진행중', approved:'결재 완료', rejected:'반려' }[s];
+}
+
+// ===== RENDER =====
+function render() {
+  const app = document.getElementById('app');
+  if (!currentUser) {
+    app.innerHTML = renderLogin();
+    return;
+  }
+  app.innerHTML = `
+    <div class="app">
+      ${renderIconSidebar()}
+      ${renderLeftPanel()}
+      <div class="main-area">
+        ${renderTopBar()}
+        <div class="content">${renderContent()}</div>
+      </div>
+    </div>
+    ${rejectModal ? renderRejectModal() : ''}
+  `;
+}
+
+function renderLogin() {
+  return `
+    <div class="login-page">
+      <div class="login-box">
+        <h2>전자결재 시스템</h2>
+        <p class="subtitle">사용자를 선택하여 로그인하세요</p>
+        <div class="user-cards">
+          ${USERS.map(u => `
+            <div class="user-card" onclick="login('${u.id}')">
+              <div class="card-name">${u.name}</div>
+              <div class="card-role">${u.role} | ${u.dept}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIconSidebar() {
+  const pending = docs.filter(d => {
+    const line = d.approvalLine.find(a => a.userId === currentUser.id);
+    return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
+  }).length;
+  return `
+    <div class="icon-sidebar">
+      <div class="icon-btn active" title="전자결재">&#x1F4CB;</div>
+    </div>
+  `;
+}
+
+function isPreviousApproved(doc, userId) {
+  const idx = doc.approvalLine.findIndex(a => a.userId === userId);
+  if (idx <= 0) return true;
+  return doc.approvalLine[idx-1].status === 'approved';
+}
+
+function renderLeftPanel() {
+  const pendingCount = docs.filter(d => {
+    const line = d.approvalLine.find(a => a.userId === currentUser.id);
+    return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
+  }).length;
+  const myDrafts = docs.filter(d => d.authorId === currentUser.id && d.status === 'draft').length;
+  const myDocs = docs.filter(d => d.authorId === currentUser.id).length;
+  const completed = docs.filter(d => {
+    const line = d.approvalLine.find(a => a.userId === currentUser.id);
+    return line && (line.status === 'approved' || line.status === 'rejected');
+  }).length;
+
+  return `
+    <div class="left-panel">
+      <h3>&#9776; 전자결재</h3>
+      <div class="new-doc-btn" onclick="goCreate()">+ 새 결재 진행</div>
+      <div class="nav-section">
+        <div class="nav-section-title">결재하기</div>
+        <div class="nav-item ${currentView==='pending'?'active':''}" onclick="goView('pending')">
+          &#128203; 결재 대기 문서
+          ${pendingCount > 0 ? `<span class="count alert">${pendingCount}</span>` : ''}
+        </div>
+        <div class="nav-item ${currentView==='received'?'active':''}" onclick="goView('received')">
+          &#128229; 결재 수신 문서
+        </div>
+        <div class="nav-item ${currentView==='scheduled'?'active':''}" onclick="goView('scheduled')">
+          &#128197; 결재 예정 문서
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">개인 문서함</div>
+        <div class="nav-item ${currentView==='mydrafts'?'active':''}" onclick="goView('mydrafts')">
+          &#128221; 기안 문서함 ${myDocs > 0 ? `<span class="count">${myDocs}</span>` : ''}
+        </div>
+        <div class="nav-item ${currentView==='drafts'?'active':''}" onclick="goView('drafts')">
+          &#128190; 임시 저장함 ${myDrafts > 0 ? `<span class="count">${myDrafts}</span>` : ''}
+        </div>
+        <div class="nav-item ${currentView==='myapproved'?'active':''}" onclick="goView('myapproved')">
+          &#9989; 결재 문서함 ${completed > 0 ? `<span class="count">${completed}</span>` : ''}
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">부서 문서함</div>
+        <div class="nav-item ${currentView==='deptall'?'active':''}" onclick="goView('deptall')">
+          &#127970; ${currentUser.dept}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTopBar() {
+  const titles = {
+    pending:'결재 대기 문서', received:'결재 수신 문서', scheduled:'결재 예정 문서',
+    mydrafts:'기안 문서함', drafts:'임시 저장함', myapproved:'결재 문서함',
+    deptall: currentUser.dept + ' 문서함', view:'문서 보기', create:'새 결재 작성'
+  };
+  return `
+    <div class="top-bar">
+      <h2>${titles[currentView] || '전자결재'}</h2>
+      <span class="breadcrumb">전자결재 &gt; ${titles[currentView] || ''}</span>
+      <span class="spacer"></span>
+      <div class="user-info">
+        <div class="user-avatar" style="background:${currentUser.color}">${currentUser.name[0]}</div>
+        <span>${currentUser.name} ${currentUser.role}</span>
+        <span style="color:#aaa;cursor:pointer;margin-left:8px" onclick="logout()">로그아웃</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderContent() {
+  if (currentView === 'create') return renderCreateForm();
+  if (currentView === 'view') return renderDocView();
+  return renderDocList();
+}
+
+function getFilteredDocs() {
+  switch(currentView) {
+    case 'pending':
+      return docs.filter(d => {
+        if (d.status === 'draft') return false;
+        const line = d.approvalLine.find(a => a.userId === currentUser.id);
+        return line && line.status === 'pending' && getDocStatus(d) === 'pending' && isPreviousApproved(d, currentUser.id);
+      });
+    case 'received':
+      return docs.filter(d => {
+        if (d.status === 'draft') return false;
+        const line = d.approvalLine.find(a => a.userId === currentUser.id);
+        return line && d.authorId !== currentUser.id;
+      });
+    case 'scheduled':
+      return docs.filter(d => {
+        if (d.status === 'draft') return false;
+        const line = d.approvalLine.find(a => a.userId === currentUser.id);
+        return line && line.status === 'pending' && !isPreviousApproved(d, currentUser.id);
+      });
+    case 'mydrafts':
+      return docs.filter(d => d.authorId === currentUser.id);
+    case 'drafts':
+      return docs.filter(d => d.authorId === currentUser.id && d.status === 'draft');
+    case 'myapproved':
+      return docs.filter(d => {
+        const line = d.approvalLine.find(a => a.userId === currentUser.id);
+        return line && (line.status === 'approved' || line.status === 'rejected');
+      });
+    case 'deptall':
+      return docs.filter(d => {
+        const author = USERS.find(u => u.id === d.authorId);
+        return author && author.dept === currentUser.dept && d.status !== 'draft';
+      });
+    default:
+      return docs;
+  }
+}
+
+function renderDocList() {
+  const filtered = getFilteredDocs();
+  if (filtered.length === 0) {
+    return `<div class="empty-state"><p>문서가 없습니다.</p></div>`;
+  }
+  return `
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>상태</th>
+          <th>문서번호</th>
+          <th>제목</th>
+          <th>기안자</th>
+          <th>소속</th>
+          <th>기안일</th>
+          <th>결재현황</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(d => {
+          const author = USERS.find(u => u.id === d.authorId);
+          const status = getDocStatus(d);
+          const statusCls = status;
+          const approved = d.approvalLine.filter(a => a.status === 'approved').length;
+          const total = d.approvalLine.length;
+          return `
+            <tr>
+              <td><span class="status-badge ${statusCls}">${getDocStatusLabel(d)}</span></td>
+              <td>${d.docNumber || '-'}</td>
+              <td><span class="doc-title-link" onclick="viewDoc('${d.id}')">${d.title}</span></td>
+              <td>${author ? author.name : ''}</td>
+              <td>${author ? author.dept : ''}</td>
+              <td>${d.createdAt ? new Date(d.createdAt).toLocaleDateString('ko-KR') : ''}</td>
+              <td>${approved}/${total} 승인</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderCreateForm() {
+  const otherUsers = USERS.filter(u => u.id !== currentUser.id);
+  const higherUsers = USERS.filter(u => u.id !== currentUser.id);
+  return `
+    <div class="doc-container">
+      <div class="doc-main">
+        <div class="doc-toolbar">
+          <button class="btn primary" onclick="submitDoc()">&#9993; 결재 상신</button>
+          <button class="btn" onclick="saveDraft()">&#128190; 임시 저장</button>
+          <button class="btn danger" onclick="goView('pending')">&#10005; 취소</button>
+        </div>
+        <div class="doc-paper">
+          <h1>업 무 기 안</h1>
+          <div class="form-row">
+            <div class="form-group">
+              <label>제목</label>
+              <input type="text" id="doc-title" placeholder="문서 제목을 입력하세요">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>시행일자</label>
+              <input type="date" id="doc-exec-date">
+            </div>
+            <div class="form-group">
+              <label>협조부서</label>
+              <input type="text" id="doc-coop-dept" placeholder="협조부서">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>합의</label>
+            <input type="text" id="doc-agreement" placeholder="합의 내용">
+          </div>
+          <div class="form-group">
+            <label>내용</label>
+            <textarea id="doc-content" placeholder="문서 내용을 입력하세요"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="doc-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-card-header"><h4>&#128100; 기안자 정보</h4></div>
+          <div style="padding:12px 16px;font-size:13px;">
+            <p><b>이름:</b> ${currentUser.name}</p>
+            <p><b>직급:</b> ${currentUser.role}</p>
+            <p><b>소속:</b> ${currentUser.dept}</p>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-card-header"><h4>&#128203; 결재선 설정</h4></div>
+          <div style="padding:12px 16px;" id="approval-line-editor">
+            <div id="approver-slots">
+              <div class="approver-slot" data-idx="0">
+                <span class="slot-label">1차 결재</span>
+                <select class="approver-select">
+                  <option value="">선택</option>
+                  ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
+                </select>
+                <button class="remove-approver" onclick="removeApproverSlot(0)">&#10005;</button>
+              </div>
+              <div class="approver-slot" data-idx="1">
+                <span class="slot-label">2차 결재</span>
+                <select class="approver-select">
+                  <option value="">선택</option>
+                  ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
+                </select>
+                <button class="remove-approver" onclick="removeApproverSlot(1)">&#10005;</button>
+              </div>
+            </div>
+            <button class="add-approver-btn" onclick="addApproverSlot()">+ 결재자 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDocView() {
+  const doc = docs.find(d => d.id === currentDocId);
+  if (!doc) return '<div class="empty-state"><p>문서를 찾을 수 없습니다.</p></div>';
+  const author = USERS.find(u => u.id === doc.authorId);
+  const status = getDocStatus(doc);
+  const isMyTurn = doc.approvalLine.some(a => a.userId === currentUser.id && a.status === 'pending' && isPreviousApproved(doc, currentUser.id)) && status === 'pending';
+  const isAuthor = doc.authorId === currentUser.id;
+
+  return `
+    <div class="doc-container">
+      <div class="doc-main">
+        <div class="doc-toolbar">
+          ${isMyTurn ? `
+            <button class="btn success" onclick="approveDoc('${doc.id}')">&#10003; 승인</button>
+            <button class="btn danger" onclick="rejectModal=true;render()">&#10005; 반려</button>
+          ` : ''}
+          ${isAuthor && status === 'draft' ? `
+            <button class="btn primary" onclick="resubmitDoc('${doc.id}')">&#9993; 결재 상신</button>
+          ` : ''}
+          ${isAuthor && status === 'pending' ? `
+            <button class="btn danger" onclick="cancelDoc('${doc.id}')">&#128281; 결재 회수</button>
+          ` : ''}
+          <button class="btn" onclick="goView('pending')">&#8592; 목록</button>
+          <button class="btn" onclick="printDoc()">&#128424; 인쇄</button>
+        </div>
+        <div class="doc-paper">
+          <h1>업 무 기 안</h1>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+            <table class="doc-meta-table">
+              <tr><th>기안자</th><td>${author ? author.name : ''}</td></tr>
+              <tr><th>소속</th><td>${author ? author.dept : ''}</td></tr>
+              <tr><th>기안일</th><td>${doc.createdAt ? formatDateTime(doc.createdAt) : ''}</td></tr>
+              <tr><th>문서번호</th><td>${doc.docNumber || '<span style="color:#999">미부여</span>'}</td></tr>
+            </table>
+
+            <table class="approval-table">
+              <tr>
+                <th rowspan="2" style="writing-mode:vertical-lr;letter-spacing:4px;">신<br>청</th>
+                ${doc.approvalLine.map((a,i) => {
+                  const u = USERS.find(x => x.id === a.userId);
+                  return `<th>${u ? u.role : ''}</th>`;
+                }).join('')}
+              </tr>
+              <tr>
+                ${doc.approvalLine.map(a => {
+                  const u = USERS.find(x => x.id === a.userId);
+                  if (a.status === 'approved') {
+                    return `<td class="stamp-cell">
+                      <div class="stamp">
+                        <div class="stamp-circle">승인</div>
+                        <div class="stamp-name">${u ? u.name : ''}</div>
+                        <div class="stamp-date">${a.actionAt ? formatDate(a.actionAt) : ''}</div>
+                      </div>
+                    </td>`;
+                  } else if (a.status === 'rejected') {
+                    return `<td class="stamp-cell">
+                      <div class="stamp">
+                        <div class="stamp-circle rejected">반려</div>
+                        <div class="stamp-name">${u ? u.name : ''}</div>
+                        <div class="stamp-date">${a.actionAt ? formatDate(a.actionAt) : ''}</div>
+                      </div>
+                    </td>`;
+                  } else {
+                    return `<td class="stamp-cell"><span class="stamp-pending">${u ? u.name : ''}</span></td>`;
+                  }
+                }).join('')}
+              </tr>
+            </table>
+          </div>
+
+          <table class="doc-detail-table">
+            <tr><th>시행일자</th><td>${doc.execDate || ''}</td><th>협조부서</th><td>${doc.coopDept || ''}</td></tr>
+            <tr><th>합의</th><td colspan="3">${doc.agreement || ''}</td></tr>
+            <tr><th>제목</th><td colspan="3">${doc.title}</td></tr>
+          </table>
+
+          <p class="doc-body-label">- 아 래 -</p>
+          <div class="doc-body">${escapeHtml(doc.content || '')}</div>
+        </div>
+      </div>
+      <div class="doc-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-tab">
+            <div class="tab active">결재선</div>
+            <div class="tab">문서정보</div>
+          </div>
+          ${doc.approvalLine.map((a,i) => {
+            const u = USERS.find(x => x.id === a.userId);
+            const isCurrent = a.status === 'pending' && isPreviousApproved(doc, a.userId) && status === 'pending';
+            let statusLabel = '', statusCls = '';
+            if (a.status === 'approved') { statusLabel = '결재 승인'; statusCls = 'done'; }
+            else if (a.status === 'rejected') { statusLabel = '반려'; statusCls = 'rejected'; }
+            else if (isCurrent) { statusLabel = '결재 대기'; statusCls = 'waiting'; }
+            else { statusLabel = '대기'; statusCls = ''; }
+            return `
+              <div class="approval-line-item ${isCurrent ? 'current' : ''}">
+                <div class="approval-avatar" style="background:${u ? u.color : '#999'}">${u ? u.name[0] : '?'}</div>
+                <div class="approval-line-info">
+                  <div class="name">${u ? u.name : ''} ${u ? u.role : ''}</div>
+                  <div class="dept">${u ? u.dept : ''}</div>
+                  ${a.actionAt ? `<div class="time">${formatFullDateTime(a.actionAt)}</div>` : ''}
+                  ${a.comment ? `<div class="time" style="color:#c62828;">사유: ${a.comment}</div>` : ''}
+                </div>
+                ${statusLabel ? `<span class="approval-line-status ${statusCls}">${statusLabel}</span>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRejectModal() {
+  return `
+    <div class="modal-overlay" onclick="rejectModal=false;render()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h3>반려 사유 입력</h3>
+        <textarea id="reject-reason" placeholder="반려 사유를 입력하세요"></textarea>
+        <div class="modal-actions">
+          <button class="btn" onclick="rejectModal=false;render()">취소</button>
+          <button class="btn danger" onclick="rejectDoc('${currentDocId}')">반려</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== ACTIONS =====
+function login(uid) {
+  currentUser = USERS.find(u => u.id === uid);
+  saveUser(currentUser);
+  currentView = 'pending';
+  render();
+}
+
+function logout() {
+  currentUser = null;
+  sessionStorage.removeItem('ea_user');
+  render();
+}
+
+function goView(view) {
+  currentView = view;
+  render();
+}
+
+function goCreate() {
+  currentView = 'create';
+  render();
+}
+
+function viewDoc(id) {
+  currentDocId = id;
+  currentView = 'view';
+  render();
+}
+
+function getApproverSelections() {
+  const selects = document.querySelectorAll('.approver-select');
+  const approvers = [];
+  selects.forEach(s => { if (s.value) approvers.push(s.value); });
+  return approvers;
+}
+
+function submitDoc() {
+  const title = document.getElementById('doc-title').value.trim();
+  const content = document.getElementById('doc-content').value.trim();
+  const execDate = document.getElementById('doc-exec-date').value;
+  const coopDept = document.getElementById('doc-coop-dept').value.trim();
+  const agreement = document.getElementById('doc-agreement').value.trim();
+  const approvers = getApproverSelections();
+
+  if (!title) { alert('제목을 입력하세요.'); return; }
+  if (approvers.length === 0) { alert('결재자를 1명 이상 선택하세요.'); return; }
+
+  const doc = {
+    id: 'doc_' + Date.now(),
+    title, content, execDate, coopDept, agreement,
+    authorId: currentUser.id,
+    status: 'submitted',
+    docNumber: null,
+    createdAt: new Date().toISOString(),
+    approvalLine: approvers.map(uid => ({
+      userId: uid,
+      status: 'pending',
+      actionAt: null,
+      comment: ''
+    }))
+  };
+
+  docs.unshift(doc);
+  saveDocs(docs);
+  currentView = 'mydrafts';
+  render();
+}
+
+function saveDraft() {
+  const title = document.getElementById('doc-title').value.trim() || '(제목 없음)';
+  const content = document.getElementById('doc-content').value.trim();
+  const execDate = document.getElementById('doc-exec-date').value;
+  const coopDept = document.getElementById('doc-coop-dept').value.trim();
+  const agreement = document.getElementById('doc-agreement').value.trim();
+  const approvers = getApproverSelections();
+
+  const doc = {
+    id: 'doc_' + Date.now(),
+    title, content, execDate, coopDept, agreement,
+    authorId: currentUser.id,
+    status: 'draft',
+    docNumber: null,
+    createdAt: new Date().toISOString(),
+    approvalLine: approvers.map(uid => ({
+      userId: uid,
+      status: 'pending',
+      actionAt: null,
+      comment: ''
+    }))
+  };
+
+  docs.unshift(doc);
+  saveDocs(docs);
+  currentView = 'drafts';
+  render();
+}
+
+function resubmitDoc(docId) {
+  const doc = docs.find(d => d.id === docId);
+  if (!doc) return;
+  doc.status = 'submitted';
+  doc.approvalLine.forEach(a => { a.status = 'pending'; a.actionAt = null; a.comment = ''; });
+  saveDocs(docs);
+  render();
+}
+
+function cancelDoc(docId) {
+  if (!confirm('결재를 회수하시겠습니까?')) return;
+  const doc = docs.find(d => d.id === docId);
+  if (!doc) return;
+  doc.status = 'draft';
+  doc.approvalLine.forEach(a => { a.status = 'pending'; a.actionAt = null; a.comment = ''; });
+  saveDocs(docs);
+  render();
+}
+
+function approveDoc(docId) {
+  const doc = docs.find(d => d.id === docId);
+  if (!doc) return;
+  const line = doc.approvalLine.find(a => a.userId === currentUser.id && a.status === 'pending');
+  if (!line) return;
+  line.status = 'approved';
+  line.actionAt = new Date().toISOString();
+
+  // Check if all approved → assign doc number
+  if (doc.approvalLine.every(a => a.status === 'approved')) {
+    doc.status = 'approved';
+    doc.docNumber = generateDocNumber();
+  }
+
+  saveDocs(docs);
+  render();
+}
+
+function rejectDoc(docId) {
+  const doc = docs.find(d => d.id === docId);
+  if (!doc) return;
+  const reason = document.getElementById('reject-reason').value.trim();
+  const line = doc.approvalLine.find(a => a.userId === currentUser.id && a.status === 'pending');
+  if (!line) return;
+  line.status = 'rejected';
+  line.actionAt = new Date().toISOString();
+  line.comment = reason;
+  doc.status = 'rejected';
+  saveDocs(docs);
+  rejectModal = false;
+  render();
+}
+
+function addApproverSlot() {
+  const container = document.getElementById('approver-slots');
+  const idx = container.children.length;
+  const higherUsers = USERS.filter(u => u.id !== currentUser.id);
+  const div = document.createElement('div');
+  div.className = 'approver-slot';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <span class="slot-label">${idx+1}차 결재</span>
+    <select class="approver-select">
+      <option value="">선택</option>
+      ${higherUsers.map(u => `<option value="${u.id}">${u.name} ${u.role} (${u.dept})</option>`).join('')}
+    </select>
+    <button class="remove-approver" onclick="this.parentElement.remove()">&#10005;</button>
+  `;
+  container.appendChild(div);
+}
+
+function removeApproverSlot(idx) {
+  const container = document.getElementById('approver-slots');
+  if (container.children.length <= 1) { alert('최소 1명의 결재자가 필요합니다.'); return; }
+  container.children[idx].remove();
+  // Re-index
+  Array.from(container.children).forEach((el, i) => {
+    el.querySelector('.slot-label').textContent = `${i+1}차 결재`;
+  });
+}
+
+function printDoc() { window.print(); }
+
+// ===== HELPERS =====
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDateTime(iso) {
+  const d = new Date(iso);
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}(${days[d.getDay()]})`;
+}
+
+function formatFullDateTime(iso) {
+  const d = new Date(iso);
+  return `${formatDate(iso)} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== INIT with sample data =====
+function initSampleData() {
+  if (localStorage.getItem('ea_initialized')) return;
+  const sampleDocs = [
+    {
+      id: 'doc_sample1',
+      title: '2020년 4분기 영업전략 보고',
+      content: '1. 목적\n  4분기 영업목표 달성을 위한 전략 수립 및 실행 계획 보고\n\n2. 현황\n  - 3분기 매출 목표 대비 95% 달성\n  - 신규 거래처 15개 확보\n  - 기존 거래처 이탈률 3% 이하 유지\n\n3. 4분기 전략\n  가. 주요 거래처 집중 관리\n  나. 신규 시장 개척 (동남아 지역)\n  다. 온라인 채널 확대\n\n4. 예상 효과\n  - 매출 전년 대비 15% 성장 예상\n  - 신규 거래처 20개 추가 목표',
+      execDate: '2020-11-30',
+      coopDept: '기획부',
+      agreement: '',
+      authorId: 'u1',
+      status: 'approved',
+      docNumber: 'DOC-2020-0001',
+      createdAt: '2020-11-27T09:10:00.000Z',
+      approvalLine: [
+        { userId:'u2', status:'approved', actionAt:'2020-11-27T09:30:00.000Z', comment:'' },
+        { userId:'u3', status:'approved', actionAt:'2020-11-27T10:15:00.000Z', comment:'' },
+      ]
+    },
+    {
+      id: 'doc_sample2',
+      title: '신규 프로젝트 인력 충원 요청',
+      content: '1. 요청 사항\n  신규 프로젝트 수행을 위한 개발 인력 2명 충원 요청\n\n2. 사유\n  - AI 기반 고객 분석 시스템 개발 프로젝트 수주\n  - 현재 가용 개발 인력 부족\n  - 프로젝트 착수 예정일: 2020-12-15\n\n3. 요청 인원\n  - 백엔드 개발자 1명 (경력 3년 이상)\n  - 프론트엔드 개발자 1명 (경력 2년 이상)',
+      execDate: '2020-12-01',
+      coopDept: '인사부',
+      agreement: '인사부 합의 필요',
+      authorId: 'u4',
+      status: 'submitted',
+      docNumber: null,
+      createdAt: '2020-11-28T11:00:00.000Z',
+      approvalLine: [
+        { userId:'u5', status:'approved', actionAt:'2020-11-28T14:00:00.000Z', comment:'' },
+        { userId:'u2', status:'pending', actionAt:null, comment:'' },
+      ]
+    },
+  ];
+  docs = sampleDocs;
+  saveDocCounter(1);
+  saveDocs(docs);
+  localStorage.setItem('ea_initialized', '1');
+}
+
+initSampleData();
+docs = loadDocs();
+render();
+</script>
+</body>
+</html>
